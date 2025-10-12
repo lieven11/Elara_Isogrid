@@ -20,17 +20,18 @@ Contents
 
 Usage
 1) Pick a case-library JSON (e.g. `mapdl/cases/sweeps/thickness.json`) **or** generate your own from a spec:
-   - Thickness sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json --dry-run`
-   - Thickness sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json`
-   - Length sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/length.json --dry-run`
-   - Length sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/length.json`
-   - Cell-pitch sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json --dry-run`
-   - Cell-pitch sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json`
+   - Thickness sweep (inputs only, macOS/Linux): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json --dry-run`
+   - Thickness sweep (run MAPDL, Windows with Ansys): `python mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json`
+   - Length sweep (inputs only, macOS/Linux): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/length.json --dry-run`
+   - Length sweep (run MAPDL, Windows with Ansys): `python mapdl/runner.py --cases mapdl/cases/sweeps/length.json`
+   - Cell-pitch sweep (inputs only, macOS/Linux): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json --dry-run`
+   - Cell-pitch sweep (run MAPDL, Windows with Ansys): `python mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json`
    - Dense multi-parameter spec → library: `python3 mapdl/case_generator.py --spec mapdl/specs/tri0_dense_template.json --out mapdl/cases/generated/tri0_dense.json`
 2) Generate APDL input files (no solve) for the chosen library (example shown for the dense library):
    `python3 mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json --dry-run`
+   (use `python` instead of `python3` on Windows if that’s how Python is installed)
 3) Run MAPDL when available (drop `--dry-run`, using the same library as above):
-   `python3 mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json`
+   `python mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json`
 4) After runs finish, gather all per-case metrics into a single table:
    `python3 mapdl/summarize_runs.py`
 
@@ -41,3 +42,4 @@ Notes
 - `case_generator.py` respects range/step definitions in the spec. Tightening step sizes (e.g. 0.01 m on `L`, 0.002 m on `a`, 0.00025 m on `t`) quickly scales to tens of thousands of permutations—check the console summary before writing.
 - Each MAPDL run writes `<case_id>_summary.csv` inside its run folder with the key outputs (tip deflection, linear buckling factor, etc.), so `summarize_runs.py` can stitch everything into one overview CSV for post-processing.
 - Heatmap outputs remain under the existing `out/` folder for now; MAPDL outputs are under `mapdl/runs/`. If you want, we can later consolidate heatmap outputs under `out_heatmap/` and update references in your scripts.
+- On macOS you typically only run the generator/runner in `--dry-run` mode (MAPDL isn’t available); execute the same command without `--dry-run` on a Windows/Linux machine with Ansys installed.
