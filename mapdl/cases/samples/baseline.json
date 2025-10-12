@@ -1,0 +1,39 @@
+{
+  "description": "Baseline demo cases for quick tests (0° tri-family, mid-range geometry).",
+  "cases": [
+    {
+      "id": "tri0_AISI304_baseline",
+      "material": "AISI_304",
+      "params": {
+        "R": 0.55,
+        "L": 1.0,
+        "a": 0.35,
+        "b": 0.012,
+        "t": 0.0025
+      }
+    },
+    {
+      "id": "tri0_AISI316L_baseline",
+      "material": "AISI_316L",
+      "params": {
+        "R": 0.55,
+        "L": 1.0,
+        "a": 0.35,
+        "b": 0.012,
+        "t": 0.0025
+      }
+    },
+    {
+      "id": "tri0_AL6061_midpitch",
+      "material": "AL_6061_T6",
+      "params": {
+        "R": 0.55,
+        "L": 0.75,
+        "n_theta": 80,
+        "b": 0.010,
+        "t": 0.0015
+      }
+    }
+  ]
+}
+
