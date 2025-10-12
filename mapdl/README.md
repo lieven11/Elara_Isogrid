@@ -20,10 +20,16 @@ Contents
 
 Usage
 1) Pick a case-library JSON (e.g. `mapdl/cases/sweeps/thickness.json`) **or** generate your own from a spec:
-   `python3 mapdl/case_generator.py --spec mapdl/specs/tri0_dense_template.json --out mapdl/cases/generated/tri0_dense.json`
-2) Generate APDL input files without solving:
+   - Thickness sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json --dry-run`
+   - Thickness sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json`
+   - Length sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/length.json --dry-run`
+   - Length sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/length.json`
+   - Cell-pitch sweep (inputs only): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json --dry-run`
+   - Cell-pitch sweep (run MAPDL): `python3 mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json`
+   - Dense multi-parameter spec → library: `python3 mapdl/case_generator.py --spec mapdl/specs/tri0_dense_template.json --out mapdl/cases/generated/tri0_dense.json`
+2) Generate APDL input files (no solve) for the chosen library (example shown for the dense library):
    `python3 mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json --dry-run`
-3) When `ansys.mapdl.core` can launch MAPDL locally/remotely:
+3) Run MAPDL when available (drop `--dry-run`, using the same library as above):
    `python3 mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json`
 4) After runs finish, gather all per-case metrics into a single table:
    `python3 mapdl/summarize_runs.py`
