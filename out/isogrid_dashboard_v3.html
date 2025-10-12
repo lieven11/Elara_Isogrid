@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Isogrid/Honeycomb Dashboard v3</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin:0; padding:0; }
+    .wrap { display:grid; grid-template-columns: 360px 1fr; gap:12px; height:100vh; }
+    .panel { overflow:auto; padding: 12px 14px; border-right:1px solid #e5e5e5; }
+    .panel h2 { margin:0 0 6px 0; font-size:18px; }
+    .subhead { font-weight:600; font-size:12px; color:#222; margin:12px 0 6px; border-bottom:1px solid #eee; padding-bottom:3px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .row3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; }
+    input[type=range]{ width:100%; }
+    .muted{ color:#666; font-size:12px; }
+    .badge { background:#eef; color:#224; padding:2px 6px; border-radius:3px; font-size:11px; }
+    #previewBox{ display:none; margin-top:6px; }
+    #previewCanvas{ width:320px; height:240px; border:1px solid #ddd; background:#fff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h2>Dashboard v3 <span class="badge">isogrid/honeycomb</span></h2>
+      <div class="subhead">Achsen</div>
+      <div class="ctrl"> 
+        <label>Axes (3 design parameters)</label>
+        <div class="row3">
+          <select id="xAxis"></select>
+          <select id="yAxis"></select>
+          <select id="zAxis"></select>
+        </div>
+        <div class="row" style="align-items:center;"><button id="swapXY">Swap X↔Y</button><div class="muted">Swap without changing parameters</div></div>
+        <div class="muted">Choose distinct parameters for x, y, z.</div>
+      </div>
+
+      <div class="subhead">Metric</div>
+      <div class="ctrl"><select id="metric"></select></div>
+
+      <div class="subhead">Material & Lattice</div>
+      <div class="ctrl">
+        <div class="row">
+          <div><label>Material</label><select id="material"></select></div>
+          <div><label>Lattice</label><select id="lattice"></select></div>
+        </div>
+        <div class="row"><div><label>Preview</label><input id="showPreview" type="checkbox" /> <span class="muted">show pattern (uses optimized geometry if available)</span></div></div>
+        <div id="previewBox"><canvas id="previewCanvas" width="320" height="240"></canvas></div>
+      </div>
+
+      <div class="subhead">Sampling</div>
+      <div class="ctrl">
+        <label>Kombiniert (alle Achsen)</label>
+        <div class="row">
+          <input id="nAll" type="range" min="1" max="100" step="1" value="15" />
+          <div class="muted">n: <span id="nAllVal"></span></div>
+        </div>
+        <div class="row3">
+          <input id="nx" type="range" min="5" max="50" step="1" value="15" />
+          <input id="ny" type="range" min="5" max="50" step="1" value="12" />
+          <input id="nz" type="range" min="5" max="50" step="1" value="12" />
+        </div>
+        <div class="row3 muted"><div>x:<span id="nxVal"></span></div><div>y:<span id="nyVal"></span></div><div>z:<span id="nzVal"></span></div></div>
+      </div>
+
+      <div class="subhead">Optimizer</div>
+      <div class="ctrl">
+        <div class="row">
+          <div><label>Ziel</label><select id="optObjective"></select></div>
+          <div><label class="muted">SF_min‑Grenze</label><input id="sfThresh" type="number" step="0.05" value="1.20" style="width:100%;" /></div>
+        </div>
+        <div class="row"> <div><label><input type="checkbox" id="optIncludeMat" /> Material mitoptimieren</label></div>
+          <div><label><input type="checkbox" id="optIncludeLat" /> Lattice mitoptimieren</label></div> </div>
+        <div class="row"> <div><label><input type="checkbox" id="optUseTies" checked /> Tie‑breakers on</label></div>
+          <div><label><input type="checkbox" id="optTieSens" /> Sensitivity tie‑breaker</label></div> </div>
+        <div><button id="runOpt">Optimize</button></div>
+        <div id="optOut" class="muted"></div>
+      </div>
+
+      <div class="subhead">Parameter‑Ranges</div>
+      <div class="ctrl">
+        <div class="ctrl"><div>b [mm]</div>
+          <input id="bMin" type="range" min="1" max="100" step="0.5" value="3.0" />
+          <input id="bMax" type="range" min="1" max="100" step="0.5" value="15.0" />
+          <div class="muted">min=<span id="bMinVal"></span> max=<span id="bMaxVal"></span></div>
+        </div>
+        <div class="ctrl"><div>t [mm]</div>
+          <input id="tMin" type="range" min="0.2" max="20" step="0.1" value="0.5" />
+          <input id="tMax" type="range" min="0.2" max="20" step="0.1" value="4.0" />
+          <div class="muted">min=<span id="tMinVal"></span> max=<span id="tMaxVal"></span></div>
+        </div>
+        <div class="ctrl"><div>n_theta [-]</div>
+          <input id="nMin" type="range" min="10" max="400" step="1" value="40" />
+          <input id="nMax" type="range" min="10" max="400" step="1" value="140" />
+          <div class="muted">min=<span id="nMinVal"></span> max=<span id="nMaxVal"></span></div>
+        </div>
+        <div class="ctrl"><div>a [mm]</div>
+          <input id="aMin" type="range" min="5" max="200" step="1" value="20" />
+          <input id="aMax" type="range" min="5" max="200" step="1" value="70" />
+          <div class="muted">min=<span id="aMinVal"></span> max=<span id="aMaxVal"></span></div>
+        </div>
+        <div class="ctrl"><div>L [m]</div>
+          <input id="lMin" type="range" min="0.1" max="5" step="0.05" value="0.30" />
+          <input id="lMax" type="range" min="0.1" max="5" step="0.05" value="1.20" />
+          <div class="muted">min=<span id="lMinVal"></span> max=<span id="lMaxVal"></span></div>
+        </div>
+      </div>
+
+      <div class="subhead">Fixwerte/Lasten</div>
+      <div class="ctrl">
+        <div class="row"><div><div>R = <span id="RVal"></span> mm</div><input id="Rmm" type="range" min="50" max="5000" step="10" value="550" /></div>
+          <div><div>K (Euler) = <span id="KVal"></span></div><input id="K" type="range" min="0.5" max="2.0" step="0.05" value="1.00" /></div></div>
+        <div class="row"><div><div>KDF [-] = <span id="KDFVal"></span></div><input id="KDF" type="range" min="0.40" max="1.00" step="0.01" value="0.85" /></div></div>
+        <div class="row"><div><div>N_req [N] = <span id="NVal"></span></div><input id="Nreq" type="range" min="0" max="500000" step="1000" value="150000" /></div>
+          <div><div>M_req [N·m] = <span id="MVal"></span></div><input id="Mreq" type="range" min="0" max="5000" step="10" value="500" /></div></div>
+        <div class="row"><div><div>T_req [N·m] = <span id="TVal"></span></div><input id="Treq" type="range" min="0" max="5000" step="10" value="800" /></div></div>
+      </div>
+      <div class="muted">Torsion: k_torsion=0.2; KDF global als Knock‑down. Lattice‑Faktoren stark vereinfacht.</div>
+    </div>
+    <div id="plot" style="height:100%;"></div>
+  </div>
+
+<script>
+// Materials
+const MAT_DB = {
+  "AISI 304":   {E: 193e9, nu: 0.29, rho: 8000, sigma_y: 215e6},
+  "AISI 316L":  {E: 193e9, nu: 0.30, rho: 8000, sigma_y: 170e6},
+  "Al 6061-T6": {E: 69e9,  nu: 0.33, rho: 2700, sigma_y: 276e6},
+  "Al 2024-T3": {E: 73e9,  nu: 0.33, rho: 2780, sigma_y: 325e6},
+  "Al 7075-T6": {E: 72e9,  nu: 0.33, rho: 2810, sigma_y: 505e6}
+};
+let mat = MAT_DB["AISI 304"]; // current material
+const FOS = 1.25, k_crippling = 4.0, k_torsion = 0.2;
+
+// Lattices
+const LATTICES = {
+  tri_0:      {label:'Triangle 0°', kind:'tri', orient:0},
+  tri_90:     {label:'Triangle 90°', kind:'tri', orient:90},
+  tri_hex:    {label:'Tri-hexagonal', kind:'tri', orient:0},
+  honeycomb:  {label:'Hexagonal (honeycomb)', kind:'hex'},
+  square_0:   {label:'Squares 0°', kind:'sq', orient:0},
+  square_45:  {label:'Squares 45°', kind:'sq', orient:45},
+};
+
+const defaultState = {"xAxis": "b", "yAxis": "t", "zAxis": "n_theta", "plotType": "surface", "material": "AISI 304", "lattice": "tri_0", "metric": "ncr_global", "KDF": 0.85, "nx": 15, "ny": 12, "nz": 12, "b_min_mm": 3.0, "b_max_mm": 15.0, "t_min_mm": 0.5, "t_max_mm": 4.0, "n_min": 40, "n_max": 140, "a_min_mm": 20.0, "a_max_mm": 70.0, "L_min": 0.3, "L_max": 1.2, "b_fix_mm": 9.0, "t_fix_mm": 2.25, "n_fix": 90.0, "a_fix_mm": 45.0, "L_fix": 0.75, "R_mm": 550.0, "K": 1.0, "N_req": 150000.0, "M_req": 500.0, "T_req": 800.0};
+let GEOM = {S:Math.sqrt(3), dz_fac:Math.sqrt(3)/2, theta:Math.PI/3, type:'tri_0', orient:0, fams:[0,Math.PI/3,-Math.PI/3], axial_EA:1.0, axial_EI:1.0};
+
+function mm_to_m(x){ return x/1000.0 }
+function geomFromState(state){
+  const type = state.lattice || 'tri_0';
+  let S, dz_fac, theta = Math.PI/3, orient=0, fams=[0,Math.PI/3,-Math.PI/3];
+  const lat = LATTICES[type] || LATTICES.tri_0;
+  orient = (lat.orient||0) * Math.PI/180.0;
+  if(lat.kind==='hex'){
+    S = 2/Math.sqrt(3); dz_fac = Math.sqrt(3)/2; theta = Math.PI/3; fams=[0,Math.PI/3,-Math.PI/3];
+  } else if(lat.kind==='sq') {
+    S = 2.0; dz_fac = (type==='square_45') ? Math.SQRT1_2 : 1.0; theta = Math.PI/4; fams=[0,Math.PI/2];
+  } else { S = Math.sqrt(3); dz_fac = Math.sqrt(3)/2; theta = Math.PI/3; fams=[0,Math.PI/3,-Math.PI/3]; }
+  const sum_c2 = fams.reduce((acc,a)=> acc + Math.cos(a+orient)**2, 0);
+  const sum_c4 = fams.reduce((acc,a)=> acc + Math.cos(a+orient)**4, 0);
+  const axial_EA = sum_c2 / 1.5; // baseline tri: 1.5
+  const axial_EI = sum_c4 / 1.5;
+  return {S, dz_fac, theta, type, orient, fams, axial_EA, axial_EI};
+}
+function updateGeom(state){ GEOM = geomFromState(state); }
+
+// Mechanics
+function areal_mass(b,t,a){ return mat.rho*(b*t)*(GEOM.S/Math.max(a,1e-12)); }
+function total_mass(R,L,b,t,a){ return areal_mass(b,t,a)*(2*Math.PI*R*L); }
+function EI_eq(R,b,t,a){ return GEOM.axial_EI * Math.PI*mat.E*(b*t)*(GEOM.S/Math.max(a,1e-12))*R**3; }
+function Ncr_global(R,L,b,t,a,K){ return (Math.PI**2)*EI_eq(R,b,t,a)/(Math.max(K*L,1e-12))**2; }
+function EA_ring(R,b,t,a){ return GEOM.axial_EA * Math.PI*mat.E*(b*t)*(GEOM.S/Math.max(a,1e-12))*R; }
+function delta_z(a){ return GEOM.dz_fac*a; }
+function Imin_rect(b,t){ return b*t**3/12; }
+function euler_sigma_cr(len,r_g,K){ const lam=(K*len)/Math.max(r_g,1e-12); return (Math.PI**2)*mat.E/(lam**2); }
+function crippling_sigma(b,t){ const denom=12*(1-mat.nu**2); const tb = t/Math.max(b,1e-12); const eta = Math.min(2.5, Math.max(1.0, 1.0 + 0.5*tb)); return k_crippling*eta*(Math.PI**2)*mat.E/denom*(tb**2); }
+function local_sf(R,L,b,t,a,N_req,K){
+  if(!N_req||N_req<=0) return Infinity;
+  const EA=EA_ring(R,b,t,a); const eps=N_req/Math.max(EA,1e-12);
+  const Imin=Imin_rect(b,t); const A=b*t; const rg=Math.sqrt(Math.max(Imin/Math.max(A,1e-12),1e-18));
+  const sigma_allow = mat.sigma_y/FOS; const sigma_crip = crippling_sigma(b,t);
+  let sfmin = Infinity;
+  for(const baseAng of GEOM.fams){
+    const ang = baseAng + (GEOM.orient||0);
+    const cos2 = Math.cos(ang)**2;
+    const dem = mat.E*eps*cos2;
+    const nearAxial = Math.abs(Math.cos(ang)) > 0.95;
+    const len = nearAxial ? delta_z(a) : a;
+    const se = euler_sigma_cr(len, rg, K);
+    const scrit = Math.min(se, sigma_crip, sigma_allow);
+    const sf = dem<=0 ? Infinity : scrit/dem;
+    if(sf < sfmin) sfmin = sf;
+  }
+  return sfmin;
+}
+function GJ_eq(R,b,t,a){ const G=mat.E/(2*(1+mat.nu)); return k_torsion*Math.PI*G*(b*t)*(GEOM.S/Math.max(a,1e-12))*R**3; }
+function sf_bending(R,b,t,a,M_req){ if(!M_req||M_req<=0) return NaN; const sigma_allow=mat.sigma_y/FOS; const M_cap=sigma_allow*EI_eq(R,b,t,a)/Math.max(R,1e-12); return M_cap/Math.max(M_req,1e-12); }
+function sf_torsion(R,b,t,a,T_req){ if(!T_req||T_req<=0) return NaN; const tau_allow=0.58*(mat.sigma_y/FOS); const J=GJ_eq(R,b,t,a); const tau=T_req*Math.max(R,0)/Math.max(J,1e-18); return tau_allow/Math.max(tau,1e-18); }
+
+const METRICS = {
+  ncr_global: {label:'Ncr [N]', fn:(R,L,b,t,a,K,KDF,N,M,T)=> KDF_eff(KDF,R,L)*Ncr_global(R,L,b,t,a,K)},
+  mass: {label:'Masse [kg]', fn:(R,L,b,t,a,K,KDF)=> total_mass(R,L,b,t,a)},
+  areal_mass: {label:'Arealmasse [kg/m²]', fn:(R,L,b,t,a)=> areal_mass(b,t,a)},
+  ncr_over_m: {label:'Ncr/m [m/s²]', fn:(R,L,b,t,a,K,KDF)=> (KDF_eff(KDF,R,L)*Ncr_global(R,L,b,t,a,K))/Math.max(total_mass(R,L,b,t,a),1e-12)},
+  sf_min: {label:'SF_min [-]', fn:(R,L,b,t,a,K,KDF,N)=> Math.min(((KDF_eff(KDF,R,L)*Ncr_global(R,L,b,t,a,K))/Math.max(N||1e-12,1e-12)), local_sf(R,L,b,t,a,N,K))},
+  sf_bending: {label:'SF Biegung [-]', fn:(R,L,b,t,a,K,KDF,N,M)=> sf_bending(R,b,t,a,M)},
+  sf_torsion: {label:'SF Torsion [-]', fn:(R,L,b,t,a,K,KDF,N,M,T)=> sf_torsion(R,b,t,a,T)}
+};
+
+const AX = ['b','t','n_theta','a','L'];
+const AX_LABEL = {b:'b [mm]', t:'t [mm]', n_theta:'n_theta [-]', a:'a [mm]', L:'L [m]'};
+
+function linspace(minv,maxv,n){ if(n<=1) return [minv]; const step=(maxv-minv==0)?1:(maxv-minv)/(n-1); return Array.from({length:n},(_,i)=>minv+i*step); }
+function n_theta_from_a(R,a){ return Math.max(1, Math.round(2*Math.PI*R/Math.max(a,1e-12))); }
+function a_from_n_theta(R,n){ return 2*Math.PI*R/Math.max(1,n); }
+// KDF as a simple function of slenderness (L/R); reduces with increasing slenderness (toy model)
+function KDF_eff(KDF, R, L){ const slender = Math.max(0, Math.min(5, L/Math.max(R,1e-9))); const kd = 1.0 - 0.08*slender; return Math.max(0.6, kd)*KDF; }
+
+function buildSurface(state){
+  updateGeom(state);
+  const R=mm_to_m(state.R_mm), K=state.K, KDF=state.KDF, N=state.N_req, M=state.M_req, T=state.T_req;
+  const ax=state.xAxis, ay=state.yAxis; const nx=state.nx, ny=state.ny;
+  function rng(name, n){
+    if(name==='b') return linspace(state.b_min_mm, state.b_max_mm, n).map(mm_to_m);
+    if(name==='t') return linspace(state.t_min_mm, state.t_max_mm, n).map(mm_to_m);
+    if(name==='n_theta') return linspace(state.n_min, state.n_max, n).map(v=>Math.round(v));
+    if(name==='a') return linspace(state.a_min_mm, state.a_max_mm, n).map(mm_to_m);
+    if(name==='L') return linspace(state.L_min, state.L_max, n);
+    return [];
+  }
+  const Xs=rng(ax,nx), Ys=rng(ay,ny); const Z=[];
+  for(let j=0;j<Ys.length;j++){
+    const row=[];
+    for(let i=0;i<Xs.length;i++){
+      let b=mm_to_m(state.b_fix_mm), t=mm_to_m(state.t_fix_mm), nth=Math.round(state.n_fix), a=mm_to_m(state.a_fix_mm), L=state.L_fix;
+      function apply(nm,val){ if(nm==='b') b=val; if(nm==='t') t=val; if(nm==='n_theta') nth=val; if(nm==='a') a=val; if(nm==='L') L=val; }
+      apply(ax, Xs[i]); apply(ay, Ys[j]);
+      if(state.use_a_priority){ nth=n_theta_from_a(R,a);} else { a=a_from_n_theta(R,nth);}    
+      const val=METRICS[state.metric].fn(R,L,b,t,a,K,KDF,N,M,T);
+      row.push(Number.isFinite(val)?val:NaN);
+    }
+    Z.push(row);
+  }
+  const Xd = Xs.map(v=> (ax==='b'||ax==='t'||ax==='a')? v*1000.0 : v);
+  const Yd = Ys.map(v=> (ay==='b'||ay==='t'||ay==='a')? v*1000.0 : v);
+  return {X:Xd, Y:Yd, Z};
+}
+
+function axisLabel(name,b,t,nth,a,L){ if(name==='b'||name==='t'||name==='a') return (name==='a'?a*1000.0: (name==='b'?b*1000.0:t*1000.0)); if(name==='n_theta') return nth; return L; }
+
+function drawPreviewIfNeeded(state){
+  const cb = document.getElementById('showPreview');
+  const box = document.getElementById('previewBox');
+  if(!cb || !box) return; if(!cb.checked){ box.style.display='none'; return; }
+  box.style.display='block';
+  const c = document.getElementById('previewCanvas'); const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  // Geometry source: use optimized design if available
+  const best = state.bestDesign || null;
+  let b_mm = state.b_fix_mm, t_mm = state.t_fix_mm, a_mm = state.a_fix_mm, L_m = state.L_fix;
+  if(best){ b_mm = best.b*1000.0; t_mm = best.t*1000.0; a_mm = best.a*1000.0; L_m = best.L; }
+  // Use a small fixed patch (3x3 cells) for clarity
+  const margin=10, cols=3, rows=3;
+  const cell = Math.max(8, Math.min((c.width-2*margin)/cols, (c.height-2*margin)/rows));
+  const s = cell/Math.max(a_mm,1e-6); // px per mm
+  ctx.lineWidth = max1(t_mm*s);
+  ctx.strokeStyle = '#333';
+  function max1(x){ return Math.max(1, x); }
+  const type = state.lattice; const orient = GEOM.orient || 0; const theta = GEOM.theta;
+  if(type==='honeycomb'){
+    const s_px=a_mm*s; const h=Math.sin(Math.PI/3)*s_px; const rowH=2*h, colW=1.5*s_px;
+    for(let row=0; row<rows+2; row++){
+      for(let col=0; col<cols+2; col++){
+        const cx = margin + col*colW + ((row%2)? 0.75*s_px : 0);
+        const cy = margin + row*rowH + h;
+        const pts=[[cx-0.5*s_px,cy-h],[cx+0.5*s_px,cy-h],[cx+s_px,cy],[cx+0.5*s_px,cy+h],[cx-0.5*s_px,cy+h],[cx-s_px,cy]];
+        ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++){ ctx.lineTo(pts[i][0],pts[i][1]); } ctx.closePath(); ctx.stroke();
+      }
+    }
+  } else if(type==='square_0' || type==='square_45'){
+    const s_px = a_mm*s; const angles=[0+orient, Math.PI/2+orient]; const centerX=c.width/2, centerY=c.height/2, Lxy=Math.hypot(c.width,c.height);
+    ctx.lineWidth = max1(t_mm*s);
+    angles.forEach(phi=>{ const ux=Math.cos(phi), uy=Math.sin(phi); for(let k=-cols;k<=cols;k++){ const px=centerX+k*s_px*(-uy); const py=centerY+k*s_px*(ux); ctx.beginPath(); ctx.moveTo(px-ux*Lxy,py-uy*Lxy); ctx.lineTo(px+ux*Lxy,py+uy*Lxy); ctx.stroke(); }});
+  } else if(type==='tri_hex'){
+    const s_px=a_mm*s; const centerX=c.width/2, centerY=c.height/2, Lxy=Math.hypot(c.width,c.height);
+    const angs=[theta,-theta].map(a=>a+orient); ctx.lineWidth=max1(t_mm*s);
+    angs.forEach(phi=>{ const ux=Math.cos(phi), uy=Math.sin(phi); for(let k=-cols;k<=cols;k++){ const px=centerX+k*s_px*(-uy); const py=centerY+k*s_px*(ux); ctx.beginPath(); ctx.moveTo(px-ux*Lxy,py-uy*Lxy); ctx.lineTo(px+ux*Lxy,py+uy*Lxy); ctx.stroke(); }});
+    const old=ctx.lineWidth; ctx.lineWidth=old*1.8; const ux=Math.cos(0+orient), uy=Math.sin(0+orient); for(let k=-rows;k<=rows;k++){ const px=centerX+k*s_px*(-uy); const py=centerY+k*s_px*(ux); ctx.beginPath(); ctx.moveTo(px-ux*Lxy,py-uy*Lxy); ctx.lineTo(px+ux*Lxy,py+uy*Lxy); ctx.stroke(); } ctx.lineWidth=old;
+  } else { // triangles families 0, ±60
+    const s_px=a_mm*s; const angs=[0,+theta,-theta].map(a=>a+orient); const centerX=c.width/2, centerY=c.height/2, Lxy=Math.hypot(c.width,c.height);
+    ctx.lineWidth=max1(t_mm*s);
+    angs.forEach(phi=>{ const ux=Math.cos(phi), uy=Math.sin(phi); for(let k=-cols;k<=cols;k++){ const px=centerX+k*s_px*(-uy); const py=centerY+k*s_px*(ux); ctx.beginPath(); ctx.moveTo(px-ux*Lxy,py-uy*Lxy); ctx.lineTo(px+ux*Lxy,py+uy*Lxy); ctx.stroke(); }});
+  }
+}
+
+function mount(){
+  const state = Object.assign({}, defaultState);
+  updateGeom(state);
+  const metricSel=document.getElementById('metric'); Object.keys(METRICS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.text=METRICS[k].label; metricSel.add(o);}); metricSel.value=state.metric;
+  ['xAxis','yAxis','zAxis'].forEach((id,i)=>{ const sel=document.getElementById(id); AX.forEach(ax=>{const o=document.createElement('option'); o.value=ax; o.text=AX_LABEL[ax]; sel.add(o);}); sel.value=state[["xAxis","yAxis","zAxis"][i]]; });
+  document.getElementById('swapXY').addEventListener('click', (e)=>{ e.preventDefault(); const ox=state.xAxis; state.xAxis=state.yAxis; state.yAxis=ox; document.getElementById('xAxis').value=state.xAxis; document.getElementById('yAxis').value=state.yAxis; rerender(); });
+  const matSel=document.getElementById('material'); Object.keys(MAT_DB).forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=k; matSel.add(o);}); matSel.value=state.material; mat=MAT_DB[state.material];
+  const latSel=document.getElementById('lattice'); Object.keys(LATTICES).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.text=LATTICES[k].label; latSel.add(o);}); latSel.value=state.lattice;
+  function clearMarker(){ state.bestMarker=null; state.bestDesign=null; state.altDesigns=null; document.getElementById('optOut').textContent=''; }
+  matSel.addEventListener('change', (e)=>{ state.material=e.target.value; mat=MAT_DB[state.material]; clearMarker(); rerender(); });
+  latSel.addEventListener('change', (e)=>{ state.lattice=e.target.value; updateGeom(state); clearMarker(); rerender(); drawPreviewIfNeeded(state); });
+  document.getElementById('showPreview').addEventListener('change', ()=> drawPreviewIfNeeded(state));
+  document.getElementById('metric').addEventListener('change',(e)=>{ state.metric=e.target.value; clearMarker(); rerender(); });
+  ['xAxis','yAxis','zAxis'].forEach(id=> document.getElementById(id).addEventListener('change',(e)=>{ state[id]=e.target.value; clearMarker(); rerender(); }));
+  function bind(id, spanId, prop){ const el=document.getElementById(id); const span=document.getElementById(spanId); const sync=()=>{ span.textContent=(+el.value).toString(); state[prop]=+el.value; clearMarker(); rerender(); drawPreviewIfNeeded(state); }; el.addEventListener('input', sync); span.textContent=el.value; state[prop]=+el.value; }
+  bind('nx','nxVal','nx'); bind('ny','nyVal','ny'); bind('nz','nzVal','nz');
+  bind('bMin','bMinVal','b_min_mm'); bind('bMax','bMaxVal','b_max_mm'); bind('tMin','tMinVal','t_min_mm'); bind('tMax','tMaxVal','t_max_mm');
+  bind('nMin','nMinVal','n_min'); bind('nMax','nMaxVal','n_max'); bind('aMin','aMinVal','a_min_mm'); bind('aMax','aMaxVal','a_max_mm');
+  bind('lMin','lMinVal','L_min'); bind('lMax','lMaxVal','L_max'); bind('Rmm','RVal','R_mm'); bind('K','KVal','K'); bind('KDF','KDFVal','KDF');
+  // L_fix control
+  const LfixEl = document.getElementById('Lfix'); if (LfixEl){ const span=document.getElementById('LfixVal'); const sync=()=>{ span.textContent = (+LfixEl.value).toFixed(2); state.L_fix = +LfixEl.value; clearMarker(); rerender(); }; LfixEl.addEventListener('input', sync); span.textContent = (+LfixEl.value).toFixed(2); state.L_fix = +LfixEl.value; }
+  bind('Nreq','NVal','N_req'); bind('Mreq','MVal','M_req'); bind('Treq','TVal','T_req');
+  // Combined sampling control
+  const nAll = document.getElementById('nAll'); const nAllVal = document.getElementById('nAllVal');
+  function syncAll(n){ n = Math.max(1, Math.min(100, Math.round(n))); nAll.value = n; nAllVal.textContent = String(n); state.nx = state.ny = state.nz = n; document.getElementById('nx').value = n; document.getElementById('ny').value = n; document.getElementById('nz').value = n; document.getElementById('nxVal').textContent = String(n); document.getElementById('nyVal').textContent = String(n); document.getElementById('nzVal').textContent = String(n); }
+  nAll.addEventListener('input', (e)=>{ syncAll(+e.target.value); });
+  syncAll(state.nx);
+
+  // Slice baseline
+  function axisRangeDisplay(st, name){ if(name==='b') return [st.b_min_mm, st.b_max_mm]; if(name==='t') return [st.t_min_mm, st.t_max_mm]; if(name==='a') return [st.a_min_mm, st.a_max_mm]; if(name==='n_theta') return [st.n_min, st.n_max]; if(name==='L') return [st.L_min, st.L_max]; return [0,1]; }
+  { const [zmin,zmax]=axisRangeDisplay(state, state.zAxis); state.sliceDisp=(zmin+zmax)/2; }
+
+  const plotDiv=document.getElementById('plot'); let rerenderTimer=null;
+  // Status indicator
+  const statusEl = document.createElement('div'); statusEl.className='muted'; statusEl.style.position='fixed'; statusEl.style.right='12px'; statusEl.style.top='8px'; statusEl.style.background='rgba(255,255,255,0.8)'; statusEl.style.padding='2px 6px'; statusEl.style.borderRadius='3px'; statusEl.textContent='ready'; document.body.appendChild(statusEl);
+  const setStatus = (s)=>{ statusEl.textContent = s; };
+  function rerender(){ if(rerenderTimer) clearTimeout(rerenderTimer); setStatus('computing…'); rerenderTimer=setTimeout(_rerender, 40); }
+  function _rerender(){
+    updateGeom(state);
+    const grid=buildSurface(state); const ctitle = METRICS[state.metric].label;
+    const layout={ title:`Surface — ${ctitle}`, scene:{xaxis:{title:AX_LABEL[state.xAxis]}, yaxis:{title:AX_LABEL[state.yAxis]}, zaxis:{title:ctitle}}, margin:{l:0,r:0,b:0,t:38}, height:window.innerHeight, uirevision:'v3'};
+    if (plotDiv && plotDiv._fullLayout && plotDiv._fullLayout.scene && plotDiv._fullLayout.scene.camera) { layout.scene.camera = plotDiv._fullLayout.scene.camera; }
+    const xStart = grid.X[0], xEnd = grid.X[grid.X.length-1]; const yStart=grid.Y[0], yEnd=grid.Y[grid.Y.length-1];
+    const sizeX = Math.max((xEnd - xStart)/20, 1e-9); const sizeY = Math.max((yEnd - yStart)/20, 1e-9); // fixed ~20 lines independent of sampling
+    const data=[{type:'surface', x:grid.X, y:grid.Y, z:grid.Z, colorscale:'Viridis', showscale:true,
+      contours:{x:{show:true, color:'black', width:1, start:xStart, end:xEnd, size:sizeX}, y:{show:true, color:'black', width:1, start:yStart, end:yEnd, size:sizeY}, z:{show:false}}}];
+    if (state.bestMarker){ data.push({type:'scatter3d', mode:'markers', x:[state.bestMarker.x], y:[state.bestMarker.y], z:[state.bestMarker.z], marker:{size:7,color:'red'}, name:'Best'}); }
+    // Add alternative markers (Top-5) as light-blue numbered points
+    if (state.altDesigns && state.altDesigns.length){
+      const ax=state.xAxis, ay=state.yAxis; const R=mm_to_m(state.R_mm), K=state.K, KDF=state.KDF, N=state.N_req, M=state.M_req, T=state.T_req;
+      const xs=[], ys=[], zs=[], labels=[];
+      for(let i=0;i<Math.min(5, state.altDesigns.length); i++){
+        const o = state.altDesigns[i];
+        const val = METRICS[state.metric].fn(R,o.L,o.b,o.t,o.a,K,KDF,N,M,T);
+        xs.push((ax==='b'||ax==='t'||ax==='a')? o.xi*1000.0 : o.xi);
+        ys.push((ay==='b'||ay==='t'||ay==='a')? o.yi*1000.0 : o.yi);
+        zs.push(val);
+        labels.push(String(i+1));
+      }
+      data.push({type:'scatter3d', mode:'markers+text', x:xs, y:ys, z:zs, marker:{size:5,color:'#57a0ff'}, text:labels, textposition:'top center', textfont:{color:'#57a0ff', size:10}, name:'Top-5'});
+    }
+    Plotly.react(plotDiv, data, layout, {responsive:true});
+    drawPreviewIfNeeded(state);
+    setStatus('ready');
+  }
+  _rerender();
+
+  // Optimizer with Top-5 near-bests
+  const objectives = { min_mass:'Masse minimieren (SF_min ≥ Ziel)', max_ncr_over_m:'Ncr/m maximieren (SF_min ≥ Ziel)' };
+  const objSel=document.getElementById('optObjective'); Object.keys(objectives).forEach(k=>{const o=document.createElement('option'); o.value=k; o.text=objectives[k]; objSel.add(o);}); objSel.value='max_ncr_over_m';
+  document.getElementById('runOpt').addEventListener('click', ()=> { setStatus('optimizing…'); setTimeout(runOptimize, 0); });
+
+  function runOptimize(){
+    const sfReq=parseFloat(document.getElementById('sfThresh').value||'1.2');
+    const obj=document.getElementById('optObjective').value;
+    const includeMat=!!document.getElementById('optIncludeMat').checked;
+    const includeLat=!!document.getElementById('optIncludeLat').checked;
+    const useTies=!!document.getElementById('optUseTies').checked;
+    const useSens=!!document.getElementById('optTieSens').checked;
+    const mats=includeMat? Object.keys(MAT_DB): [state.material];
+    const lats=includeLat? Object.keys(LATTICES): [state.lattice];
+    function rng(name,n){ if(name==='b') return linspace(state.b_min_mm,state.b_max_mm,state.nx).map(mm_to_m); if(name==='t') return linspace(state.t_min_mm,state.t_max_mm,state.ny).map(mm_to_m); if(name==='n_theta') return linspace(state.n_min,state.n_max,state.nz).map(v=>Math.round(v)); if(name==='a') return linspace(state.a_min_mm,state.a_max_mm,state.nz).map(mm_to_m); if(name==='L') return linspace(state.L_min,state.L_max,state.nz); return []; }
+    function objectiveValue(R,L,b,t,a,K,KDF,N,M,T){ const ncr_eff=KDF_eff(KDF,R,L)*Ncr_global(R,L,b,t,a,K); const mass=total_mass(R,L,b,t,a); const ncr_over_m=ncr_eff/Math.max(mass,1e-12); return (obj==='min_mass')? mass : -ncr_over_m; }
+    const ax=state.xAxis, ay=state.yAxis, az=state.zAxis; const Xs=rng(ax,state.nx), Ys=rng(ay,state.ny), Zs=rng(az,state.nz);
+    let candidates=[];
+    for(const mname of mats){ const matSaved=mat; const stateMatSaved=state.material; mat=MAT_DB[mname]; state.material=mname;
+      for(const lat of lats){ const latSaved=state.lattice; state.lattice=lat; updateGeom(state);
+        for(let k=0;k<Zs.length;k++){
+          for(let j=0;j<Ys.length;j++){
+            for(let i=0;i<Xs.length;i++){
+              const R=mm_to_m(state.R_mm), K=state.K, KDF=state.KDF, N=state.N_req, M=state.M_req, T=state.T_req;
+              let b=mm_to_m(state.b_fix_mm), t=mm_to_m(state.t_fix_mm), nth=Math.round(state.n_fix), a=mm_to_m(state.a_fix_mm), L=state.L_fix;
+              function put(name,val){ if(name==='b') b=val; if(name==='t') t=val; if(name==='n_theta') nth=val; if(name==='a') a=val; if(name==='L') L=val; }
+              put(ax,Xs[i]); put(ay,Ys[j]); put(az,Zs[k]);
+              if(state.use_a_priority){ nth=n_theta_from_a(R,a);} else { a=a_from_n_theta(R,nth);}  
+              const ncr=KDF_eff(KDF,R,L)*Ncr_global(R,L,b,t,a,K); const mass=total_mass(R,L,b,t,a); const sf_loc=local_sf(R,L,b,t,a,N,K); const sf_glob=(N&&N>0)?(ncr/Math.max(N,1e-12)):Infinity; const sf_min_val=Math.min(sf_loc,sf_glob); const ncr_over_m=ncr/Math.max(mass,1e-12);
+              let objVal=objectiveValue(R,L,b,t,a,K,KDF,N,M,T); if(sf_min_val < sfReq) objVal += 1e9;
+              let sens=0; if(useSens){ const fb=1e-6+Math.abs(b)*0.01, ft=1e-6+Math.abs(t)*0.01, fa=1e-6+Math.abs(a)*0.01; const fL=1e-6+Math.abs(L)*0.01; const f1=objectiveValue(R,L+fL,b,t,a,K,KDF,N,M,T); const f2=objectiveValue(R,L-fL,b,t,a,K,KDF,N,M,T); const gL=(f1-f2)/(2*fL); const fb1=objectiveValue(R,L,b+fb,t,a,K,KDF,N,M,T), fb2=objectiveValue(R,L,b-fb,t,a,K,KDF,N,M,T); const gb=(fb1-fb2)/(2*fb); const ft1=objectiveValue(R,L,b,t+ft,a,K,KDF,N,M,T), ft2=objectiveValue(R,L,b,t-ft,a,K,KDF,N,M,T); const gt=(ft1-ft2)/(2*ft); const fa1=objectiveValue(R,L,b,t,a+fa,K,KDF,N,M,T), fa2=objectiveValue(R,L,b,t,a-fa,K,KDF,N,M,T); const ga=(fa1-fa2)/(2*fa); sens=Math.sqrt(gL*gL+gb*gb+gt*gt+ga*ga); }
+              candidates.push({obj:objVal, feasible: sf_min_val>=sfReq, xi:Xs[i], yi:Ys[j], zi:Zs[k], ncr, mass, sf_min:sf_min_val, ncr_over_m, sens, b,t,a,L,nth, material:mname, lattice:lat});
+            }
+          }
+        }
+        state.lattice=latSaved; updateGeom(state);
+      }
+      mat=matSaved; state.material=stateMatSaved;
+    }
+    // First pass: global grid
+    function cmpPrimary(a,b){ const eps=1e-9; if (Math.abs(a.obj-b.obj)>eps) return a.obj-b.obj; if(!useTies) return 0; // primary only
+      // tie-breakers
+      if (obj==='max_ncr_over_m'){ // prefer lower mass, then higher SF_min, then lower sensitivity
+        if (Math.abs(a.mass-b.mass)>1e-6) return a.mass-b.mass;
+        if (Math.abs(a.sf_min-b.sf_min)>1e-6) return b.sf_min-a.sf_min;
+        if (useSens && Math.abs(a.sens-b.sens)>1e-12) return a.sens-b.sens;
+        return 0;
+      } else { // min_mass objective: prefer higher Ncr/m, then higher SF_min, then lower sensitivity
+        if (Math.abs(a.ncr_over_m-b.ncr_over_m)>1e-9) return b.ncr_over_m-a.ncr_over_m;
+        if (Math.abs(a.sf_min-b.sf_min)>1e-6) return b.sf_min-a.sf_min;
+        if (useSens && Math.abs(a.sens-b.sens)>1e-12) return a.sens-b.sens;
+        return 0;
+      }
+    }
+    candidates.sort(cmpPrimary);
+    const feas=candidates.filter(c=>c.feasible);
+    let pool = (feas.length>0? feas : candidates).slice(0, 6);
+    let best = pool[0] || null; let alts = pool.slice(1, 6);
+    // Second pass: local refinement around best to stabilize against sampling
+    if(best){
+      const R=mm_to_m(state.R_mm), K=state.K, KDF=state.KDF, N=state.N_req, M=state.M_req, T=state.T_req;
+      const matSaved=mat, stateMatSaved=state.material, latSaved=state.lattice;
+      mat = MAT_DB[best.material]; state.material=best.material; state.lattice=best.lattice; updateGeom(state);
+      function refineSpan(v, lo, hi){ const w=0.2*(hi-lo); const a=Math.max(lo, v-w); const b=Math.min(hi, v+w); const n=7; const step=(b-a)/(n-1); return Array.from({length:n},(_,i)=> a+i*step); }
+      function boundedLin(minv,maxv,n){ const step=(maxv-minv)/(n-1); return Array.from({length:n},(_,i)=> minv+i*step); }
+      function rngRef(name){ if(name==='b') return refineSpan(best.b*1000.0, state.b_min_mm, state.b_max_mm).map(mm_to_m); if(name==='t') return refineSpan(best.t*1000.0, state.t_min_mm, state.t_max_mm).map(mm_to_m); if(name==='n_theta') return refineSpan(best.nth, state.n_min, state.n_max).map(v=>Math.round(v)); if(name==='a') return refineSpan(best.a*1000.0, state.a_min_mm, state.a_max_mm).map(mm_to_m); if(name==='L') return refineSpan(best.L, state.L_min, state.L_max); return []; }
+      const ax=state.xAxis, ay=state.yAxis, az=state.zAxis;
+      const Xs=rngRef(ax), Ys=rngRef(ay), Zs=rngRef(az);
+      let best2=best, best2Obj=best.obj; let alts2=[];
+      for(let k=0;k<Zs.length;k++){
+        for(let j=0;j<Ys.length;j++){
+          for(let i=0;i<Xs.length;i++){
+            let b=mm_to_m(state.b_fix_mm), t=mm_to_m(state.t_fix_mm), nth=Math.round(state.n_fix), a=mm_to_m(state.a_fix_mm), L=state.L_fix;
+            function put(name,val){ if(name==='b') b=val; if(name==='t') t=val; if(name==='n_theta') nth=val; if(name==='a') a=val; if(name==='L') L=val; }
+            put(ax,Xs[i]); put(ay,Ys[j]); put(az,Zs[k]); if(state.use_a_priority){ nth=n_theta_from_a(R,a);} else { a=a_from_n_theta(R,nth);}  
+            const ncr=KDF*Ncr_global(R,L,b,t,a,K); const mass=total_mass(R,L,b,t,a); const sf_loc=local_sf(R,L,b,t,a,N,K); const sf_glob=(N&&N>0)?(ncr/Math.max(N,1e-12)):Infinity; const sf_min_val=Math.min(sf_loc,sf_glob); const ncr_over_m=ncr/Math.max(mass,1e-12);
+            let objVal=(obj==='min_mass')? mass : -ncr_over_m; if(sf_min_val < sfReq) objVal += 1e9;
+            const cand={obj:objVal, feasible: sf_min_val>=sfReq, xi:Xs[i], yi:Ys[j], zi:Zs[k], ncr, mass, sf_min:sf_min_val, ncr_over_m, b,t,a,L,nth, material:state.material, lattice:state.lattice};
+            alts2.push(cand);
+            if (objVal < best2Obj){ best2Obj=objVal; best2=cand; }
+          }
+        }
+      }
+      alts2.sort(cmpPrimary); const feas2=alts2.filter(c=>c.feasible); let pool2=(feas2.length>0? feas2: alts2);
+      // Keep alternatives on the same z-slice as best for plotting on the same surface
+      const tolZ = 1e-9; const sameZ = pool2.filter(p=> Math.abs(p.zi - best2.zi) <= tolZ);
+      pool2 = (sameZ.length>=2 ? sameZ : pool2).slice(0,6);
+      best=pool2[0]||best2; alts=pool2.slice(1,6);
+      mat=matSaved; state.material=stateMatSaved; state.lattice=latSaved; updateGeom(state);
+    }
+    // best & alts produced above (after refinement if done)
+    if(best){
+      // update selections and marker
+      state.material=best.material; mat=MAT_DB[state.material]; document.getElementById('material').value=state.material;
+      state.lattice=best.lattice; document.getElementById('lattice').value=state.lattice; updateGeom(state);
+      // Align fixed values with best so the surface matches the marker
+      state.b_fix_mm = best.b*1000.0; state.t_fix_mm = best.t*1000.0; state.a_fix_mm = best.a*1000.0; state.n_fix = best.nth; state.L_fix = best.L;
+      const R=mm_to_m(state.R_mm), K=state.K, KDF=state.KDF, N=state.N_req, M=state.M_req, T=state.T_req; const ax=state.xAxis, ay=state.yAxis;
+      const metricVal=METRICS[state.metric].fn(R,best.L,best.b,best.t,best.a,K,KDF,N,M,T);
+      state.bestMarker={ x:(ax==='b'||ax==='t'||ax==='a')? best.xi*1000.0:best.xi, y:(ay==='b'||ay==='t'||ay==='a')? best.yi*1000.0:best.yi, z:metricVal };
+      state.bestDesign = best; state.altDesigns = alts;
+      const li=(s)=>`<li>${s}</li>`; const AXL=AX_LABEL; const fmt=(name,val)=> (name==='b'||name==='t'||name==='a')? `${(val*1000).toFixed(2)} mm` : (name==='n_theta'? `${val}` : `${val.toFixed(3)}`);
+      const bx=fmt(state.xAxis,best.xi), by=fmt(state.yAxis,best.yi), bz=fmt(state.zAxis,best.zi);
+      const line1=`Position: x=${AXL[state.xAxis]}=${bx}; y=${AXL[state.yAxis]}=${by}; Slice(${AXL[state.zAxis]})=${bz}`;
+      const bmm=(best.b*1000).toFixed(2), tmm=(best.t*1000).toFixed(2), amm=(best.a*1000).toFixed(2);
+      // tie-break annotation for best
+      let tieBest = 'primary';
+      if (obj==='max_ncr_over_m'){
+        const objMin = best.obj; const eps=1e-9; const near=pool.filter(p=> Math.abs(p.obj-objMin)<=eps);
+        if (near.length>1){ tieBest = 'tie→mass→SF_min'; }
+      } else {
+        const mMin = best.mass; const eps=1e-6; const near=pool.filter(p=> Math.abs(p.mass-mMin)<=eps);
+        if (near.length>1){ tieBest = 'tie→Ncr/m→SF_min'; }
+      }
+      const line2=`Geometrie: b=${bmm} mm; t=${tmm} mm; a=${amm} mm; n_theta=${best.nth}; L=${best.L.toFixed(3)} m; lattice=${best.lattice}; material=${best.material}; selection=${tieBest}`;
+      const line3=`Metriken: mass=${best.mass.toFixed(3)} kg; Ncr=${best.ncr.toExponential(2)} N; Ncr/m=${best.ncr_over_m.toFixed(3)} m/s²; SF_min=${best.sf_min.toFixed(2)}`;
+      let altList='';
+      if(alts && alts.length){
+        const fmtAlt=(o)=>{ const a_b=(o.b*1000).toFixed(1), a_t=(o.t*1000).toFixed(1), a_a=(o.a*1000).toFixed(1); const score=(obj==='min_mass')? `mass=${o.mass.toFixed(2)} kg` : `Ncr/m=${o.ncr_over_m.toFixed(2)} m/s²`; let tie='primary'; if (obj==='max_ncr_over_m'){ const eps=1e-9; if (Math.abs(o.obj-best.obj)<=eps){ tie = (Math.abs(o.mass-best.mass)>1e-6)? 'tie: mass' : (Math.abs(o.sf_min-best.sf_min)>1e-6? 'tie: SF_min' : 'tie'); } } else { const eps=1e-6; if (Math.abs(o.mass-best.mass)<=eps){ tie = (Math.abs(o.ncr_over_m-best.ncr_over_m)>1e-9)? 'tie: Ncr/m' : (Math.abs(o.sf_min-best.sf_min)>1e-6? 'tie: SF_min' : 'tie'); } } return `${o.material}, ${o.lattice} — b=${a_b} mm, t=${a_t} mm, a=${a_a} mm, L=${o.L.toFixed(2)} m, Ncr=${o.ncr.toExponential(2)} N, mass=${o.mass.toFixed(2)} kg, SF_min=${o.sf_min.toFixed(2)}, ${score} [${tie}]`; };
+        altList = '<div class="subhead" style="margin-top:8px;">Alternativen (Top 5)</div><ul>' + alts.map(o=>li(fmtAlt(o))).join('') + '</ul>';
+      }
+      document.getElementById('optOut').innerHTML = `<ul style="margin:6px 0 0 18px;">${li(line1)}${li(line2)}${li(line3)}</ul>` + altList;
+      _rerender(); setStatus('ready');
+    } else {
+      document.getElementById('optOut').textContent='Keine zulässige Kombination gefunden.'; setStatus('ready');
+    }
+  }
+}
+
+window.addEventListener('load', mount);
+</script>
+</body>
+</html>

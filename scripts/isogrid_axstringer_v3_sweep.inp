@@ -1,0 +1,215 @@
+/filnam,isogrid_axstringer_v3_sweep
+/clear
+/prep7
+! ==============================================================
+! Isogrid v3 VALIDATION — 0°-Stringer (BEAM188), DOE gemäß v3-Dashboard
+! R = 550 mm (fix), Parameter: b, t, n_theta, L, Material ∈ {304,316L,6061,2024,7075}
+! Output: results_v3_axstringer.csv
+! ==============================================================
+
+/title,Isogrid v3 — axial stringer sweep (0° family)
+
+! ---------- USER EDIT (Steps dafür frei anpassen) ----------
+*set, RO, 0.55        ! [m] Radius außen (v3 default 550 mm)
+! v3 Ranges:
+! b in [3.0..15.0] mm, t in [0.5..4.0] mm, n_theta in [40..140], L in [0.30..1.20] m
+! Schritte (Editiere nach Bedarf für fein/grob):
+*set, B_min, 0.003   ! m
+*set, B_max, 0.015
+*set, B_step,0.003   ! => 3,6,9,12,15 mm
+
+*set, T_min, 0.0005  ! m
+*set, T_max, 0.0040
+*set, T_step,0.0005  ! => 0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0 mm
+
+*set, NTH_min,40
+*set, NTH_max,140
+*set, NTH_step,20    ! => 40,60,80,100,120,140
+
+*set, L_min, 0.30    ! m
+*set, L_max, 1.20
+*set, L_step,0.30    ! => 0.30,0.60,0.90,1.20 m
+
+! Referenz-Axiallast zur Vorversteifung (aus v3 N_req Default = 150 kN):
+*set, FZ_REF, 150000 ! [N]
+
+! Elementlänge Ziel [m] (axial)
+*set, ELEN_TGT, 0.02
+
+! ---------- MATERIALDATEN gemäß v3 (MAT_DB) ----------
+! IDs: 1=AISI304, 2=AISI316L, 3=Al6061-T6, 4=Al2024-T3, 5=Al7075-T6
+mp,ex,1,193e9   ! 304
+mp,prxy,1,0.29
+mp,dens,1,8000
+mp,ex,2,193e9   ! 316L
+mp,prxy,2,0.30
+mp,dens,2,8000
+mp,ex,3,69e9    ! 6061-T6
+mp,prxy,3,0.33
+mp,dens,3,2700
+mp,ex,4,73e9    ! 2024-T3
+mp,prxy,4,0.33
+mp,dens,4,2780
+mp,ex,5,72e9    ! 7075-T6
+mp,prxy,5,0.33
+mp,dens,5,2810
+
+! ---------- ELEMENTTYPEN ----------
+et,1,188         ! BEAM188
+keyopt,1,3,3     ! Consistent mass (besser für Modal)
+et,2,184         ! MPC184 CERIG für Ringkopplungen
+keyopt,2,2,1
+
+! ---------- CSV Header ----------
+*cfopen,results_v3_axstringer,csv
+*VWRITE,'DesignID','MatID','Ro[m]','L[m]','b[m]','t[m]','n_theta','a[m]','Mass_per_m[kg/m]','LBF[-]','SigmaMax[Pa]','Umax[m]','f1[Hz]'
+( A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A )
+*cfclose
+
+*set,DESID,0
+! ---------- Loops: Material, t, b, n_theta, L ----------
+*do, MATID, 1, 5, 1
+  *do, t, T_min, T_max, T_step
+    *do, b, B_min, B_max, B_step
+      *do, NTH, NTH_min, NTH_max, NTH_step
+        *do, L, L_min, L_max, L_step
+
+          DESID = DESID + 1
+
+          ! Re-Start sauber halten
+          /prep7
+          allsel,all
+          finish
+          /clear,nostart
+          /prep7
+
+          ! Re-declare types (nach /clear)
+          et,1,188
+          keyopt,1,3,3
+          et,2,184
+          keyopt,2,2,1
+          mat, MATID
+
+          ! Rechteckiger BEAM-Querschnitt b×t
+          sect,1,beam,rect_bxt
+          secdata, b, t
+          secnum,1
+          type,1
+          secnum,1
+          real,0
+          mat,MATID
+
+          ! Abstände: n_theta axialer 0°-Stringer; Umfangs-Pitch a=2πR/n_theta
+          *set, TWO_PI, 6.283185307179586
+          *set, a_pitch, TWO_PI*RO/max(1,NTH)
+
+          ! Axiale Diskretisierung
+          *set, NEZ_real, L/ELEN_TGT
+          *set, NEZ, nint(NEZ_real)
+          *if, NEZ,lt,10, then
+            *set, NEZ, 10
+          *endif
+          *set, DZ, L/NEZ
+
+          ! Pilotknoten für Ringkopplungen
+          n,100000,0,0,0
+          n,100001,0,0,L
+
+          ! Stringer generieren
+          *set, dth, TWO_PI/NTH
+          *set, NODE_ID,1
+          cmdele,RINGBOT
+          cmdele,RINGTOP
+
+          *do, is, 0, NTH-1, 1
+            *set, theta, is*dth
+            *set, x, RO*cos(theta)
+            *set, y, RO*sin(theta)
+
+            n, NODE_ID, x,y,0
+            cm, RINGBOT, node, NODE_ID
+            *set, last_node, NODE_ID
+
+            *do, kz, 1, NEZ, 1
+              *set, zc, kz*DZ
+              *set, NODE_ID, NODE_ID+1
+              n, NODE_ID, x,y,zc
+              e, last_node, NODE_ID
+              *set, last_node, NODE_ID
+
+              *if, kz,eq,NEZ, then
+                cm, RINGTOP, node, NODE_ID
+              *endif
+            *enddo
+          *enddo
+
+          ! Rigid-Ringkopplungen auf Piloten (alle DOF)
+          type,2
+          cerig,100000,RINGBOT,all
+          cerig,100001,RINGTOP,all
+          allsel,all
+          finish
+
+          ! ---------- STATIK: Vorlast (für Buckling Linearisation) ----------
+          /solu
+          antype,static
+          nlgeom,off
+          d,100000,all,0
+          f,100001,FZ,-FZ_REF
+          outres,all,none
+          outres,elem,yes
+          outres,node,yes
+          solve
+          finish
+
+          ! POST1 — Umax, SigmaMax
+          /post1
+          set,last
+          *get, UMAX, NODE, 0, MAX, U,SUM
+          *get, SMAX, ELEM, 0, MAX, SEQV
+          finish
+
+          ! ---------- BUCKLING (linear) ----------
+          /solu
+          antype,buckle
+          buckopt,lanb,1
+          solve
+          finish
+
+          /post1
+          set,1,1
+          *get, LBF, MODE, 1, FREQ   ! Buckling EV wird als FREQ-Feld berichtet
+          finish
+
+          ! ---------- MODAL (erste Eigenfrequenz) ----------
+          /solu
+          antype,modal
+          modopt,lanb,1
+          d,100000,all,0    ! Unterer Pilot fix
+          ! Oberer Pilot frei in z, aber mit Vor-Setup genügt Fix unten
+          solve
+          finish
+
+          /post1
+          set,1,1
+          *get, F1, MODE, 1, FREQ
+          finish
+
+          ! ---------- Kennzahlen ----------
+          *get, RHO, MAT, MATID, PROPX, DENS
+          *set, Asec, b*t
+          *set, MASS_PER_M, RHO*Asec*NTH
+
+          ! ---------- CSV ----------
+          *cfopen,results_v3_axstringer,csv,APPEND
+          *VWRITE,DESID,MATID,RO,L,b,t,NTH,a_pitch,MASS_PER_M,LBF,SMAX,UMAX,F1
+          ( I8,',',I2,',',F8.4,',',F8.4,',',F10.6,',',F10.6,',',I5,',',F10.6,',',E14.6,',',E14.6,',',E14.6,',',E14.6 )
+          *cfclose
+
+        *enddo ! L
+      *enddo   ! n_theta
+    *enddo     ! b
+  *enddo       ! t
+*enddo         ! MAT
+
+/exit,nosave
