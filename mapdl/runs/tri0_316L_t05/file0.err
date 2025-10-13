@@ -1,0 +1,101 @@
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:34:29
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ The geometry is not available.  Issue the RESUME command to restore the 
+ database.  The NUMVAR command is ignored.                               
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Altering the abort level key is not recommended.                        
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ LMSHAPE is not a recognized PREP7 command, abbreviation, or macro.      
+  This command will be ignored.                                          
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Component NODE is not defined.                                          
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Item label ELEM on the OUTRES command is invalid.  Valid labels are:    
+ NSOL RSOL ESOL NLOA STRS FGRA EPEL EPPL EPCR EPTH FFLU MISC VENG LOCI   
+ SVAR V A CINT AESO EPDI EANG FMAG CURD NLDA EHEA ETMP SRFS CONT BKST    
+ NAR NDST NDEL NDPL NDCR NDTH STAT ERASE BASIC and ALL.                  
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Item label NODE on the OUTRES command is invalid.  Valid labels are:    
+ NSOL RSOL ESOL NLOA STRS FGRA EPEL EPPL EPCR EPTH FFLU MISC VENG LOCI   
+ SVAR V A CINT AESO EPDI EANG FMAG CURD NLDA EHEA ETMP SRFS CONT BKST    
+ NAR NDST NDEL NDPL NDCR NDTH STAT ERASE BASIC and ALL.                  
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no nodes defined.                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no nodes defined.                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no elements selected.                                         
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Nodes and elements currently do not exist in the database and will be   
+ obtained from the results file.  If you subsequently save this model    
+ (SAVE or /EXIT command), it will overwrite the data currently on        
+ jobname.db.                                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ An error occurred while attempting to open the results file file.rst.   
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Unable to read geometry from the ( rst ) results file.  Either the      
+ geometry is not on the file or the file could not be read.  The SET     
+ command is ignored.  If the file is an older results file that does     
+ not contain the geometry, issue a RESUME command to restore the         
+ geometry to the database.                                               
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Unknown label in field 5 ( max ) of *GET command.                       
+  Line= *get,u_top,node,0,max,u,z                                        
+  The *GET command is ignored.                                           
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Unknown label in field 5 ( max ) of *GET command.                       
+  Line= *get,SMAX,elem,0,max,seqv                                        
+  The *GET command is ignored.                                           
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ BUCKOPT is not a recognized SOLUTION command, abbreviation, or macro.   
+                                                                         
+  This command will be ignored.                                          
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ The distributed memory parallel solution currently only supports the    
+ Block Lanczos [BUCOPT,LANB] and subspace [BUCOPT,SUBS] eigenvalue       
+ extraction methods for buckling analyses.  Distributed parallel         
+ processing will be deactivated for this solution.                       
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no nodes defined.                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no nodes defined.                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ File ( needed for prestress effects ) does not exist.                   
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ There are no elements selected.                                         
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Nodes and elements currently do not exist in the database and will be   
+ obtained from the results file.  If you subsequently save this model    
+ (SAVE or /EXIT command), it will overwrite the data currently on        
+ jobname.db.                                                             
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ An error occurred while attempting to open the results file file.rst.   
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Unable to read geometry from the ( rst ) results file.  Either the      
+ geometry is not on the file or the file could not be read.  The SET     
+ command is ignored.  If the file is an older results file that does     
+ not contain the geometry, issue a RESUME command to restore the         
+ geometry to the database.                                               

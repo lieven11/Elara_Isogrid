@@ -35,6 +35,27 @@ Usage
 4) After runs finish, gather all per-case metrics into a single table:
    `python3 mapdl/summarize_runs.py`
 
+Command examples
+- Dense 3-parameter library (no solve): `python mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json --dry-run`
+- Dense 3-parameter library (solve if MAPDL available): `python mapdl/runner.py --cases mapdl/cases/generated/tri0_dense.json`
+- Rib thickness sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json [--dry-run]`
+- Segment length sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/length.json [--dry-run]`
+- Cell pitch sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json [--dry-run]`
+- Coarse 3-3-3 design grid: `python mapdl/runner.py --cases mapdl/cases/grids/tri0_design_grid.json [--dry-run]`
+
+Python 3.12 (Windows launcher)
+- If you manage Python via the Windows launcher, replace the `python`/`python3` calls above with `py -3.12` (for example: `py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json --dry-run`).
+
+Sometimes it doesnt work: run
+1. $Env:ANSYSLMD_LICENSE_FILE = '1055@WIN-ELARA-GPU'
+2. echo $Env:ANSYSLMD_LICENSE_FILE
+1055@WIN-ELARA-GPU
+3. py -3.12 -c "from ansys.mapdl.core import launch_mapdl; mapdl = launch_mapdl(); print(mapdl.version); mapdl.exit()"
+>> 
+24.2
+4. py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json 
+(für 4.: oder anderer command für andere Fälle)
+
 Notes
 - The APDL template is a starting point for a 0°-family triangular isogrid using BEAM188. It parameterizes lattice pitch `a`, rib width `b`, thickness `t`, length `L`, and radius `R`.
 - If `a` is not provided, it is computed from `R` and `n_theta` (cells around the circumference).

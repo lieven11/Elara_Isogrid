@@ -24,6 +24,9 @@ secdata, {B}, {T}
 *set,_L, {L}
 *set,_nx, 3      ! small starter grid across width (cells)
 *set,_nz, nint(_L/_dz) + 1
+*set,u_top,0
+*set,LBF,0
+*set,SMAX,0
 
 ! Build 0° family of ribs along axial direction at x = i*_a
 ! Create keypoints and lines in a simple grid, then connect axial ribs
@@ -74,14 +77,33 @@ allsel, all
 d, FIXZ0, all, 0
 f, LOADZL, fz, 100.0   ! nominal load
 
+outres,all,none
+outres,elem,yes
+outres,node,yes
+
 solve
 finish
 
 /post1
 set,last
 ! Save key results
-*get, u_top, node, LOADZL, u, z
-*status, u_top
+cmsel,s,LOADZL
+*get,u_top,node,0,max,u,z
+allsel,all
+*get,SMAX,elem,0,max,seqv
+finish
+
+/solu
+antype,buckle
+buckopt,lanb,1
+pstres,on
+solve
+finish
+
+/post1
+set,1,1
+*get,LBF,MODE,1,FREQ
+finish
 
 save
 finish
