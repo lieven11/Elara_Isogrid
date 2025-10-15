@@ -56,6 +56,10 @@ def format_param_snippet(name: str, value: float) -> str:
     if name == "L" or name == "R":
         cm = value * 100.0
         return f"{name}{cm:03.0f}"
+    if name in {"axial_load_N", "load_total", "load"}:
+        if abs(value) >= 1.0:
+            return f"N{int(round(value))}"
+        return f"N{value:05.3f}".replace(".", "p")
     if name == "n_theta":
         return f"nth{int(round(value))}"
     if abs(value) >= 1.0:
@@ -177,4 +181,3 @@ def main() -> None:
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry point
     main()
-

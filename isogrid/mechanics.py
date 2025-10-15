@@ -5,6 +5,7 @@ from .materials import IsotropicMaterial
 from .geometry import (
     a_from_n_theta,
     delta_z_from_a,
+    end_ring_volume,
     line_length_density_total,
     line_length_density_per_family,
     surface_area,
@@ -29,7 +30,10 @@ def areal_mass(material: IsotropicMaterial, b: float, t: float, a: float) -> flo
 
 
 def total_mass(material: IsotropicMaterial, R: float, L: float, b: float, t: float, a: float) -> float:
-    return areal_mass(material, b, t, a) * surface_area(R, L)
+    lattice_mass = areal_mass(material, b, t, a) * surface_area(R, L)
+    ring_volume_total = 2.0 * end_ring_volume(R, t)
+    ring_mass = material.rho * ring_volume_total
+    return lattice_mass + ring_mass
 
 
 def EI_equivalent(material: IsotropicMaterial, R: float, b: float, t: float, a: float) -> float:

@@ -7,7 +7,7 @@ from isogrid.materials import (
     IsotropicMaterial,
     MATERIAL_LIBRARY,
 )
-from isogrid.geometry import n_theta_from_a, a_from_n_theta, delta_z_from_a
+from isogrid.geometry import END_RING_HEIGHT, n_theta_from_a, a_from_n_theta, delta_z_from_a
 
 
 MATERIAL_REGISTRY: Dict[str, IsotropicMaterial] = {
@@ -102,6 +102,7 @@ def derive_params(params: Dict[str, Any]) -> Dict[str, float]:
         "b": b,
         "t": t,
         "dz": dz,
+        "h_top_bottom": END_RING_HEIGHT,
     }
 
 

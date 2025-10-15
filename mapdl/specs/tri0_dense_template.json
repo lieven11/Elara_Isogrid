@@ -8,13 +8,13 @@
     "AL_2024_T3",
     "AL_7075_T6"
   ],
-  "id_parameters": ["t", "L", "a"],
+  "id_parameters": ["t", "L", "a", "axial_load_N"],
   "parameters": {
     "R": {"value": 0.55},
     "b": {"value": 0.012},
     "t": {"start": 0.0005, "stop": 0.0040, "step": 0.0005},
     "L": {"start": 0.25, "stop": 2.0, "step": 0.25},
-    "a": {"start": 0.05, "stop": 0.60, "step": 0.05}
+    "a": {"start": 0.05, "stop": 0.60, "step": 0.05},
+    "axial_load_N": {"values": [10, 100, 1000, 10000, 100000, 1000000]}
   }
 }
-

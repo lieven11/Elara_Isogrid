@@ -10,9 +10,17 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from isogrid.mechanics import total_mass  # type: ignore
+from mapdl.utils import resolve_material  # type: ignore
 
 
 DEFAULT_SUMMARY = Path(__file__).parent / "runs" / "summary.csv"
@@ -21,20 +29,20 @@ DEFAULT_REPORT = Path(__file__).parent / "runs" / "summary_report.md"
 # Metrics we consider for ranking. The weight is only used if the caller does
 # not override it via --weight tip_defl=0.5 etc.
 METRICS = {
-    "tip_defl": {
-        "label": "Tip Deflection [m]",
+    "tip_per_load": {
+        "label": "Tip Deflection per Load [m/N]",
         "higher_is_better": False,
         "default_weight": 0.35,
     },
-    "buckling": {
-        "label": "Buckling Factor",
+    "buckling_per_mass": {
+        "label": "Buckling Capacity per Mass [N/kg]",
         "higher_is_better": True,
-        "default_weight": 0.35,
+        "default_weight": 0.40,
     },
-    "sigma_ma": {
-        "label": "Von Mises Stress [Pa]",
+    "sigma_per_load": {
+        "label": "Stress per Load [Pa/N]",
         "higher_is_better": False,
-        "default_weight": 0.30,
+        "default_weight": 0.25,
     },
 }
 
@@ -45,6 +53,21 @@ NUMERIC_COLUMNS = {
     "a_m",
     "b_m",
     "t_m",
+    "n_theta",
+    "tip_defl",
+    "tip_defl_m",
+    "buckling",
+    "buckling_factor",
+    "sigma_ma",
+    "sigma_max_pa",
+    "axial_load_face_N",
+    "face_pressure_pa",
+    "load_pair_total_N",
+    "buckling_face_N",
+    "buckling_pair_N",
+    "total_mass_kg",
+    "tip_per_load_m_per_N",
+    "sigma_per_load_pa_per_N",
     *METRICS.keys(),
 }
 
@@ -79,6 +102,79 @@ class MetricStats:
         if self.higher_is_better:
             return (value - self.minimum) / self.span
         return (self.maximum - value) / self.span
+
+
+def _first_present(data: Dict[str, Optional[float]], keys: Sequence[str]) -> Optional[float]:
+    for key in keys:
+        value = data.get(key)
+        if value is not None:
+            return value
+    return None
+
+
+def augment_row(row: "Row") -> None:
+    data = row.data
+
+    tip_defl = _first_present(data, ("tip_defl_m", "tip_defl"))
+    sigma_max = _first_present(data, ("sigma_max_pa", "sigma_ma"))
+    buckling_factor = _first_present(data, ("buckling_factor", "buckling"))
+
+    load_face = _first_present(data, ("axial_load_face_N",))
+    load_pair = _first_present(data, ("load_pair_total_N",))
+
+    if load_face is None and load_pair is not None:
+        load_face = 0.5 * load_pair
+    if load_pair is None and load_face is not None:
+        load_pair = 2.0 * load_face
+
+    data["axial_load_face_N"] = load_face
+    data["load_pair_total_N"] = load_pair
+
+    buckling_pair = _first_present(data, ("buckling_pair_N",))
+    if buckling_pair is None and buckling_factor is not None and load_pair is not None:
+        buckling_pair = buckling_factor * load_pair
+    buckling_face = _first_present(data, ("buckling_face_N",))
+    if buckling_face is None and buckling_pair is not None:
+        buckling_face = 0.5 * buckling_pair
+    data["buckling_pair_N"] = buckling_pair
+    data["buckling_face_N"] = buckling_face
+
+    mass = _first_present(data, ("total_mass_kg",))
+    R = data.get("R_m")
+    L = data.get("L_m")
+    a = data.get("a_m")
+    b = data.get("b_m")
+    t = data.get("t_m")
+
+    if mass is None and None not in (R, L, a, b, t):
+        material_key = row.text("material") or row.text("mat_code")
+        try:
+            material = resolve_material(material_key)
+        except Exception:
+            material = None
+        if material is not None:
+            mass = total_mass(material, R, L, b, t, a)
+    data["total_mass_kg"] = mass
+
+    if buckling_pair is not None and mass not in (None, 0.0):
+        data["buckling_per_mass"] = buckling_pair / mass
+    else:
+        data.setdefault("buckling_per_mass", None)
+
+    load_ref = None
+    if load_pair is not None and abs(load_pair) > 0.0:
+        load_ref = abs(load_pair)
+
+    tip_per_load = _first_present(data, ("tip_per_load", "tip_per_load_m_per_N"))
+    sigma_per_load = _first_present(data, ("sigma_per_load", "sigma_per_load_pa_per_N"))
+
+    if tip_per_load is None and tip_defl is not None and load_ref:
+        tip_per_load = tip_defl / load_ref
+    if sigma_per_load is None and sigma_max is not None and load_ref:
+        sigma_per_load = sigma_max / load_ref
+
+    data["tip_per_load"] = tip_per_load
+    data["sigma_per_load"] = sigma_per_load
 
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
@@ -158,7 +254,9 @@ def load_rows(path: Path) -> List[Row]:
             for key, value in raw.items():
                 if key in NUMERIC_COLUMNS:
                     coerced[key] = coerce_float(value)
-            rows.append(Row(data=coerced, raw=raw))
+            row = Row(data=coerced, raw=raw)
+            augment_row(row)
+            rows.append(row)
     return rows
 
 
@@ -215,10 +313,11 @@ def render_table(rows: Sequence[Tuple[int, Row]]) -> str:
         ("Material", lambda idx, row: row.text("material") or row.text("mat_code")),
         ("t [m]", lambda idx, row: format_number(row.value("t_m"), precision=4)),
         ("a [m]", lambda idx, row: format_number(row.value("a_m"), precision=4)),
-        ("b [m]", lambda idx, row: format_number(row.value("b_m"), precision=4)),
-        ("Tip Defl.", lambda idx, row: format_number(row.value("tip_defl"), precision=4)),
-        ("Buckling", lambda idx, row: format_number(row.value("buckling"), precision=4)),
-        ("sigma_ma", lambda idx, row: format_number(row.value("sigma_ma"), precision=4)),
+        ("Mass [kg]", lambda idx, row: format_number(row.value("total_mass_kg"), precision=4)),
+        ("Load [N]", lambda idx, row: format_number(row.value("load_pair_total_N"), precision=4)),
+        ("Buckling/Mass", lambda idx, row: format_number(row.value("buckling_per_mass"), precision=4)),
+        ("Tip/Load", lambda idx, row: format_number(row.value("tip_per_load"), precision=4)),
+        ("Sigma/Load", lambda idx, row: format_number(row.value("sigma_per_load"), precision=4)),
         ("Score", lambda idx, row: format_number(row.score, precision=4)),
     ]
     header = " | ".join(name for name, _ in columns)

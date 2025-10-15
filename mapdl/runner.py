@@ -9,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from isogrid.mechanics import total_mass  # type: ignore
+from isogrid.geometry import annulus_area
+
 from mapdl.utils import resolve_material, derive_params, ensure_run_dir, material_code
 
 
@@ -45,6 +48,10 @@ def render_template(
         "DZ": p["dz"],
     }
     ctx.update(extras)
+    for key, value in p.items():
+        upper = key.upper()
+        if upper not in ctx:
+            ctx[upper] = value
     return template.format(**ctx)
 
 
@@ -95,9 +102,34 @@ def main() -> None:
         mat_code = material_code(mat_name)
 
         run_dir = ensure_run_dir(root, case_id)
+
+        raw_params = case["params"]
+        load_face = float(
+            raw_params.get(
+                "axial_load_N",
+                raw_params.get("load_total", raw_params.get("load", 100.0)),
+            )
+        )
+        face_area = annulus_area(params["R"], params["t"])
+        if face_area <= 0.0:
+            face_area = 1e-12
+        face_pressure = load_face / face_area
+        mass_total = total_mass(
+            material,
+            params["R"],
+            params["L"],
+            params["b"],
+            params["t"],
+            params["a"],
+        )
+
         extras = {
             "CASE_ID": case_id,
             "MAT_CODE": mat_code,
+            "AXIAL_LOAD_N": load_face,
+            "FACE_AREA": face_area,
+            "FACE_PRESSURE": face_pressure,
+            "TOTAL_MASS": mass_total,
         }
         inp_text = render_template(template, mat_dict, params, extras)
         inp_path = run_dir / f"{case_id}.inp"
