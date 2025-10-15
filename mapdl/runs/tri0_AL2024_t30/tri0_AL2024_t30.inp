@@ -27,6 +27,11 @@ secdata, 0.012, 0.003
 *set,u_top,0
 *set,LBF,0
 *set,SMAX,0
+*set,_face_load,100.0
+*set,_face_area,0.010338981422963973
+*set,_face_pressure,9672.132670428191
+*set,_mass_total,5.722433086921187
+*set,_load_pair,2*_face_load
 
 ! Build 0° family of ribs along axial direction at x = i*_a
 ! Create keypoints and lines in a simple grid, then connect axial ribs
@@ -68,14 +73,31 @@ nsle,s
 
 allsel,all
 nsel, s, loc, z, 0
-cm, FIXZ0, node
+cm, LOADZ0, node
+cmcopy, FIXZ0, LOADZ0
 allsel, all
 nsel, s, loc, z, _L
 cm, LOADZL, node
 allsel, all
 
 d, FIXZ0, all, 0
-f, LOADZL, fz, 100.0   ! nominal load
+
+! Distributed axial loads applied as node-equivalent forces on top and bottom faces
+cmsel, s, node, LOADZL
+*get,_ntop,node,,count
+*if,_ntop,gt,0,then
+  *set,_fz_top,_face_load/max(_ntop,1)
+  f, all, fz, _fz_top
+*endif
+allsel,all
+
+cmsel, s, node, LOADZ0
+*get,_nbot,node,,count
+*if,_nbot,gt,0,then
+  *set,_fz_bot,-_face_load/max(_nbot,1)
+  f, all, fz, _fz_bot
+*endif
+allsel,all
 
 outres,all,none
 outres,elem,yes
@@ -108,10 +130,26 @@ finish
 save
 finish
 
+*set,_buckling_face,LBF*_face_load
+*set,_buckling_pair,2*_buckling_face
+*set,_load_ref,abs(_load_pair)
+*if,_load_ref,gt,1e-12,then
+  *set,_tip_per_load,u_top/_load_ref
+  *set,_sigma_per_load,SMAX/_load_ref
+*else
+  *set,_tip_per_load,0
+  *set,_sigma_per_load,0
+*endif
+*if,_mass_total,gt,1e-12,then
+  *set,_buckling_per_mass,_buckling_pair/_mass_total
+*else
+  *set,_buckling_per_mass,0
+*endif
+
 ! Write summary CSV for downstream aggregation
 *cfopen,tri0_AL2024_t30_summary,csv
-*vwrite,'case_id','material','mat_code','R_m','L_m','a_m','b_m','t_m','n_theta','tip_defl_m','buckling_factor','sigma_max_pa'
-(A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A)
-*vwrite,'tri0_AL2024_t30','Al 2024-T3','AL2024',0.55,1.0,0.35,0.012,0.003,10,u_top,LBF,SMAX
-(A,',',A,',',A,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',I8,',',F12.6,',',F12.6,',',F12.6)
+*vwrite,'case_id','material','mat_code','R_m','L_m','a_m','b_m','t_m','n_theta','tip_defl_m','buckling_factor','sigma_max_pa','axial_load_face_N','face_pressure_pa','load_pair_total_N','buckling_face_N','buckling_pair_N','total_mass_kg','buckling_per_mass','tip_per_load_m_per_N','sigma_per_load_pa_per_N'
+(A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A)
+*vwrite,'tri0_AL2024_t30','Al 2024-T3','AL2024',0.55,1.0,0.35,0.012,0.003,10,u_top,LBF,SMAX,_face_load,_face_pressure,_load_pair,_buckling_face,_buckling_pair,_mass_total,_buckling_per_mass,_tip_per_load,_sigma_per_load
+(A,',',A,',',A,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',I8,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6)
 *cfclose

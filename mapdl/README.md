@@ -13,6 +13,7 @@ Contents
   - `grids/`: coarse 3×3×3 design grid so you can launch multi-parameter batches.
   - `generated/`: optional output location when you build custom libraries with the generator.
 - `specs/`: Sweep templates (e.g. `tri0_dense_template.json`) describing ranges/steps.
+- `geometry_preview/`: Static Matplotlib previews for lattice geometry sanity checks (`geometry_preview/tri0_preview.py`).
 - `case_generator.py`: Expand a spec into a case-library JSON (thousands of combos if needed).
 - `summarize_runs.py`: Collate per-case summary CSVs into one `summary.csv` after MAPDL finishes.
 - `runner.py`: Expand cases into APDL input files and optionally run MAPDL if available.
@@ -42,6 +43,29 @@ Command examples
 - Segment length sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/length.json [--dry-run]`
 - Cell pitch sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json [--dry-run]`
 - Coarse 3-3-3 design grid: `python mapdl/runner.py --cases mapdl/cases/grids/tri0_design_grid.json [--dry-run]`
+- Geometry preview (interactive window): `py -3.12 mapdl/geometry_preview/tri0_preview.py`
+- Geometry preview to PNG (headless): `py -3.12 mapdl/geometry_preview/tri0_preview.py --save preview.png`
+
+Post-release workflow
+1. Pull the latest code and review the changelog or git log for MAPDL-related updates.
+2. Regenerate any derived case libraries if specs changed (for example: `python3 mapdl/case_generator.py --spec ... --out ...`).
+3. Rebuild APDL input decks without solving to confirm nothing fails: `python3 mapdl/runner.py --cases <library>.json --dry-run`.
+4. Launch the full solves on the target machine (drop `--dry-run` and prefer the Windows launcher if MAPDL is local).
+5. Refresh the aggregated outputs once solves finish: `python3 mapdl/summarize_runs.py`.
+6. Inspect `mapdl/runs/<case_id>/` for spot checks and open `mapdl/runs/summary.csv` (or your merged file) to compare against the previous release.
+
+Updating case libraries
+- Re-run the generator with the same `--out` path to overwrite a library that should pick up new logic: `python3 mapdl/case_generator.py --spec mapdl/specs/tri0_dense_template.json --out mapdl/cases/generated/tri0_dense.json`.
+- Add `--dry-run` first if you want to confirm the case count before writing.
+- To refresh every spec in one go on PowerShell:
+  ```powershell
+  Get-ChildItem mapdl/specs -Filter *.json | ForEach-Object {
+    $spec = $_.FullName
+    $out = "mapdl/cases/generated/$($_.BaseName).json"
+    py -3.12 mapdl/case_generator.py --spec $spec --out $out
+  }
+  ```
+- Adjust the launcher (`python3`, `python`, or `py -3.12`) to match your environment.
 
 Python 3.12 (Windows launcher)
 - If you manage Python via the Windows launcher, replace the `python`/`python3` calls above with `py -3.12` (for example: `py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json --dry-run`).

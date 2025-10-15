@@ -5,6 +5,14 @@
 - Rows with complete score: 40
 - Weights: buckling=0.35, sigma_ma=0.30, tip_defl=0.35
 
+## Overview
+
+| Metric | Unit | Reported Range | Best Case (Case -> Material) | Score Weight | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Tip Deflection | m | 0.0000 - 0.0000 | tri0_304 -> AISI 304 | 0.35 | Displacement column `tip_defl` is 0.0000 for every row in `summary.csv`. |
+| Buckling Factor | - | 0.0000 - 0.0000 | tri0_304 -> AISI 304 | 0.35 | Multiple `buckling` columns exist in the CSV; the first is entirely 0.0000. |
+| Von Mises Stress | Pa | 0.0000 - 0.0000 | tri0_304 -> AISI 304 | 0.30 | `sigma_ma` is also 0.0000 throughout the CSV. |
+
 ## Top Results
 
 | Rank | Case | Material | t [m] | a [m] | b [m] | Tip Defl. | Buckling | sigma_ma | Score |
@@ -22,12 +30,20 @@
 
 ## Metric Highlights
 
-- **Tip Deflection [m]**: tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000
-- **Buckling Factor**: tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000
-- **Von Mises Stress [Pa]**: tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000; tri0_304 (AISI 304) -> 0.0000
+| Metric | Top Case -> Material | Value | Unit | Comment |
+| --- | --- | --- | --- | --- |
+| Tip Deflection | tri0_304 -> AISI 304 | 0.0000 | m | Identical zero deflection reported for every run. |
+| Buckling Factor | tri0_304 -> AISI 304 | 0.0000 | - | Buckling output appears unpopulated in the CSV. |
+| Von Mises Stress | tri0_304 -> AISI 304 | 0.0000 | Pa | Stress results are zero across the dataset. |
 
 ## Metric Ranges
 
 - **Tip Deflection [m]**: min 0.0000, max 0.0000
 - **Buckling Factor**: min 0.0000, max 0.0000
 - **Von Mises Stress [Pa]**: min 0.0000, max 0.0000
+
+## Data Quality Notes
+
+- Every metric column used for scoring is zero in `mapdl/runs/summary.csv`, which means the solver results were not captured or parsed correctly.
+- The raw CSV header includes duplicated `buckling` fields, which can break CSV readers and may indicate a post-processing script bug.
+- Confirm that the MAPDL post-processing step exports non-zero values (e.g., update the result extraction script or check for unit scaling issues) before re-running the summary generation.
