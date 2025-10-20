@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       22:56:35
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:56:53
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -17,9 +17,6 @@
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  CMCOPY is not a recognized SOLUTION command, abbreviation, or macro.    
   This command will be ignored.                                          
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Component NODE is not defined.                                          
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
  Component NODE is not defined.                                          
