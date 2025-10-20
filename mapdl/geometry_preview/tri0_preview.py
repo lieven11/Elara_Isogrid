@@ -49,63 +49,86 @@ def build_triangular_lattice(
     a: float,
     n_theta: int,
     axial_length: float,
+    *,
+    theta_fraction: float = 1.0,
+    height_fraction: float = 1.0,
 ) -> Tuple[List[Vector3], Dict[str, List[Segment]]]:
-    width = n_theta * a
+    theta_fraction = max(1e-6, min(theta_fraction, 1.0))
+    height_fraction = max(1e-6, min(height_fraction, 1.0))
+    effective_length = axial_length * height_fraction
     dz = delta_z_from_a(a)
 
     rows_z: List[float] = []
     i = 0
     while True:
         z = i * dz
-        if z > axial_length + 1e-9:
+        if z > effective_length + 1e-9:
             break
         rows_z.append(z)
         i += 1
-    if not rows_z or rows_z[-1] < axial_length - 1e-9:
-        rows_z.append(axial_length)
+    if not rows_z or rows_z[-1] < effective_length - 1e-9:
+        rows_z.append(effective_length)
 
     nodes: List[Vector3] = []
     node_index: Dict[Tuple[int, int], int] = {}
 
-    def to_xyz(x_unwrapped: float, z_val: float) -> Vector3:
-        theta = (x_unwrapped % width) / max(R, 1e-12)
-        return (
-            R * math.cos(theta),
-            R * math.sin(theta),
-            z_val,
-        )
+    theta_step = a / max(R, 1e-12)
+    n_cols = max(2, int(math.ceil(n_theta * theta_fraction)))
+    theta_min = float("inf")
+    theta_max = float("-inf")
 
     for r, z_val in enumerate(rows_z):
         offset = 0.0 if r % 2 == 0 else 0.5
-        for c in range(n_theta):
-            x_unwrapped = (c + offset) * a
+        for c in range(n_cols):
+            col_pos = c + offset
             idx = len(nodes)
-            nodes.append(to_xyz(x_unwrapped, z_val))
+            theta = col_pos * theta_step
+            nodes.append(
+                (
+                    R * math.cos(theta),
+                    R * math.sin(theta),
+                    z_val,
+                )
+            )
             node_index[(r, c)] = idx
+            theta_min = min(theta_min, theta)
+            theta_max = max(theta_max, theta)
 
     segments: Dict[str, List[Segment]] = {"0": [], "+60": [], "-60": []}
 
     for r, z_val in enumerate(rows_z):
-        for c in range(n_theta):
+        for c in range(n_cols):
             here = node_index[(r, c)]
-            right = node_index[(r, (c + 1) % n_theta)]
-            segments["0"].append((here, right))
 
             if r + 1 >= len(rows_z):
+                upper_exists = False
+            else:
+                upper_exists = True
+
+            if c + 1 < n_cols:
+                right = node_index[(r, c + 1)]
+                segments["0"].append((here, right))
+
+            if not upper_exists:
                 continue
 
             if r % 2 == 0:
                 up_right = node_index[(r + 1, c)]
-                up_left = node_index[(r + 1, (c - 1) % n_theta)]
                 segments["+60"].append((here, up_right))
-                segments["-60"].append((here, up_left))
+                if c - 1 >= 0:
+                    up_left = node_index[(r + 1, c - 1)]
+                    segments["-60"].append((here, up_left))
             else:
                 up_left = node_index[(r + 1, c)]
-                up_right = node_index[(r + 1, (c + 1) % n_theta)]
                 segments["-60"].append((here, up_left))
-                segments["+60"].append((here, up_right))
+                if c + 1 < n_cols:
+                    up_right = node_index[(r + 1, c + 1)]
+                    segments["+60"].append((here, up_right))
 
-    return nodes, segments
+    if not math.isfinite(theta_min) or not math.isfinite(theta_max):
+        theta_min, theta_max = 0.0, 2.0 * math.pi
+
+    return nodes, segments, (theta_min, theta_max)
 
 
 def draw_ring(
@@ -116,8 +139,11 @@ def draw_ring(
     color: str,
     linewidth: float = 1.2,
     inner_radius: float | None = None,
+    theta_limits: Tuple[float, float] | None = None,
 ) -> None:
-    theta = np.linspace(0.0, 2.0 * math.pi, 240)
+    if theta_limits is None:
+        theta_limits = (0.0, 2.0 * math.pi)
+    theta = np.linspace(theta_limits[0], theta_limits[1], 240)
     for z in z_values:
         x_outer = radius * np.cos(theta)
         y_outer = radius * np.sin(theta)
@@ -166,6 +192,7 @@ def plot_preview(
     radius: float,
     wall_thickness: float,
     save_path: Path | None,
+    theta_limits: Tuple[float, float] | None = None,
 ) -> None:
     fig = plt.figure(figsize=(9, 7))
     ax = fig.add_subplot(111, projection="3d")
@@ -191,18 +218,51 @@ def plot_preview(
             )
             used_label = None
 
+    if theta_limits is not None:
+        theta_min, theta_max = theta_limits
+    else:
+        theta_values = np.array([math.atan2(y, x) for x, y, _ in nodes])
+        if theta_values.size == 0:
+            theta_min, theta_max = 0.0, 2.0 * math.pi
+        else:
+            theta_unwrapped = np.unwrap(theta_values)
+            theta_min = float(theta_unwrapped.min())
+            theta_max = float(theta_unwrapped.max())
+    if theta_max < theta_min:
+        theta_min, theta_max = theta_max, theta_min
+
     ring_color = "#444444"
     ring_top = ring_bottom + ring_height
     inner_radius = max(radius - wall_thickness, 0.0)
-    draw_ring(ax, radius, [ring_bottom, ring_top], color=ring_color, linewidth=1.6, inner_radius=inner_radius)
+    bottom_ring_top = 0.0
+    bottom_ring_bottom = -ring_height
+    draw_ring(
+        ax,
+        radius,
+        [ring_bottom, ring_top],
+        color=ring_color,
+        linewidth=1.6,
+        inner_radius=inner_radius,
+        theta_limits=(theta_min, theta_max),
+    )
+    draw_ring(
+        ax,
+        radius,
+        [bottom_ring_bottom, bottom_ring_top],
+        color=ring_color,
+        linewidth=1.6,
+        inner_radius=inner_radius,
+        theta_limits=(theta_min, theta_max),
+    )
 
-    for angle in np.linspace(0.0, 2.0 * math.pi, 8, endpoint=False):
+    support_angles = np.linspace(theta_min, theta_max, 4)
+    for angle in support_angles:
         x_outer = radius * math.cos(angle)
         y_outer = radius * math.sin(angle)
         ax.plot(
             [x_outer, x_outer],
             [y_outer, y_outer],
-            [ring_bottom, ring_top],
+            [bottom_ring_top, ring_top],
             color=ring_color,
             linewidth=1.0,
         )
@@ -212,31 +272,119 @@ def plot_preview(
             ax.plot(
                 [x_inner, x_inner],
                 [y_inner, y_inner],
-                [ring_bottom, ring_top],
+                [bottom_ring_top, ring_top],
                 color=ring_color,
                 linewidth=0.9,
                 linestyle="--",
             )
 
     axis_extent = radius * 1.2
+    z_axis_top = ring_top * 1.1
+    z_axis_bottom = bottom_ring_bottom * 1.1
     ax.plot([0.0, axis_extent], [0.0, 0.0], [0.0, 0.0], color="k", linewidth=1.0)
     ax.plot([0.0, 0.0], [0.0, axis_extent], [0.0, 0.0], color="k", linewidth=1.0)
-    ax.plot([0.0, 0.0], [0.0, 0.0], [0.0, ring_top * 1.1], color="k", linewidth=1.0)
+    ax.plot([0.0, 0.0], [0.0, 0.0], [z_axis_bottom, z_axis_top], color="k", linewidth=1.0)
     ax.text(axis_extent, 0.0, 0.0, "X", fontsize=10)
     ax.text(0.0, axis_extent, 0.0, "Y", fontsize=10)
-    ax.text(0.0, 0.0, ring_top * 1.1, "Z", fontsize=10)
+    ax.text(0.0, 0.0, z_axis_top, "Z", fontsize=10)
+    ax.text(0.0, 0.0, z_axis_bottom, "-Z", fontsize=10)
+
+    arrow_length = radius * 0.25
+    inner_radius = max(radius - wall_thickness, 0.0)
+    theta_samples = np.linspace(theta_min, theta_max, 120)
+    if np.isclose(inner_radius, radius):
+        radii = np.array([0.0, radius])
+    else:
+        radii = np.array([inner_radius, radius])
+    theta_grid, radius_grid = np.meshgrid(theta_samples, radii)
+    x_grid = radius_grid * np.cos(theta_grid)
+    y_grid = radius_grid * np.sin(theta_grid)
+    z_top = np.full_like(x_grid, ring_top)
+    if radius > 0.0:
+        ax.plot_surface(
+            x_grid,
+            y_grid,
+            z_top,
+            color="#d62728",
+            alpha=0.18,
+            linewidth=0.0,
+            antialiased=False,
+        )
+
+    load_theta = 0.5 * (theta_min + theta_max)
+    ring_mid_radius = (inner_radius + radius) * 0.5 if radius > 0.0 else 0.0
+    load_origin = (
+        ring_mid_radius * math.cos(load_theta),
+        ring_mid_radius * math.sin(load_theta),
+        ring_top + arrow_length * 0.6,
+    )
+    load_direction = (0.0, 0.0, -arrow_length)
+    arrow_angles = np.linspace(theta_min, theta_max, 8)
+    for angle in arrow_angles:
+        origin = (
+            ring_mid_radius * math.cos(angle),
+            ring_mid_radius * math.sin(angle),
+            ring_top + arrow_length * 0.4,
+        )
+        ax.quiver(
+            origin[0],
+            origin[1],
+            origin[2],
+            load_direction[0],
+            load_direction[1],
+            load_direction[2],
+            color="#d62728",
+            linewidth=1.6,
+            arrow_length_ratio=0.2,
+        )
+    text_offset = arrow_length * 0.2
+    ax.text(
+        load_origin[0],
+        load_origin[1],
+        load_origin[2] + load_direction[2] - text_offset,
+        "Axial load on annulus",
+        color="#d62728",
+        fontsize=10,
+        ha="center",
+    )
+
+    z_bottom = np.full_like(x_grid, bottom_ring_bottom)
+    if radius > 0.0:
+        ax.plot_surface(
+            x_grid,
+            y_grid,
+            z_bottom,
+            color="#333333",
+            alpha=0.12,
+            linewidth=0.0,
+            antialiased=False,
+        )
+    base_label_radius = ring_mid_radius
+    ax.text(
+        base_label_radius * math.cos(load_theta),
+        base_label_radius * math.sin(load_theta),
+        bottom_ring_bottom - arrow_length * 0.3,
+        "Fixed base annulus",
+        color="#333333",
+        fontsize=9,
+        ha="center",
+    )
 
     ax.set_xlabel("X [m]")
     ax.set_ylabel("Y [m]")
     ax.set_zlabel("Z [m]")
     ax.set_title("Triangular Isogrid (0°) Preview")
 
-    set_equal_axes(ax, nodes + [
-        (radius, 0.0, ring_top),
-        (-radius, 0.0, ring_top),
-        (0.0, radius, ring_top),
-        (0.0, -radius, ring_top),
-    ])
+    set_equal_axes(
+        ax,
+        nodes
+        + [
+            (radius * math.cos(theta_min), radius * math.sin(theta_min), ring_top),
+            (radius * math.cos(theta_max), radius * math.sin(theta_max), ring_top),
+            (radius * math.cos(theta_min), radius * math.sin(theta_min), bottom_ring_bottom),
+            (radius * math.cos(theta_max), radius * math.sin(theta_max), bottom_ring_bottom),
+        ],
+    )
 
     handles, labels = ax.get_legend_handles_labels()
     if labels:
@@ -285,16 +433,27 @@ def main() -> None:
 
     wall_thickness = defaults.get("t", 0.002)
     axial_length = max(args.length, 1e-6)
-    nodes, segments = build_triangular_lattice(R, a, n_theta, axial_length)
+    theta_fraction = 0.25
+    height_fraction = 0.5
+    nodes, segments, theta_limits = build_triangular_lattice(
+        R,
+        a,
+        n_theta,
+        axial_length,
+        theta_fraction=theta_fraction,
+        height_fraction=height_fraction,
+    )
+    isogrid_height = axial_length * height_fraction
 
     plot_preview(
         nodes,
         segments,
-        ring_bottom=axial_length,
+        ring_bottom=isogrid_height,
         ring_height=END_RING_HEIGHT,
         radius=R,
         wall_thickness=wall_thickness,
         save_path=args.save,
+        theta_limits=theta_limits,
     )
 
 
