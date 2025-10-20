@@ -247,7 +247,8 @@ def load_rows(path: Path) -> List[Row]:
         raise FileNotFoundError(f"Summary CSV '{path}' does not exist.")
     rows: List[Row] = []
     with path.open(newline="") as fp:
-        reader = csv.DictReader(fp)
+        data_lines = (line for line in fp if not line.lstrip().startswith("#"))
+        reader = csv.DictReader(data_lines)
         for raw_row in reader:
             raw = {key: (value.strip() if value is not None else "") for key, value in raw_row.items()}
             coerced: Dict[str, Optional[float]] = {}
