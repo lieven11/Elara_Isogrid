@@ -13,7 +13,6 @@ Contents
   - `grids/`: coarse 3×3×3 design grid so you can launch multi-parameter batches.
   - `generated/`: optional output location when you build custom libraries with the generator.
 - `specs/`: Sweep templates (e.g. `tri0_dense_template.json`) describing ranges/steps.
-- `geometry_preview/`: Static Matplotlib previews for lattice geometry sanity checks (`geometry_preview/tri0_preview.py`).
 - `case_generator.py`: Expand a spec into a case-library JSON (thousands of combos if needed).
 - `summarize_runs.py`: Collate per-case summary CSVs into one `summary.csv` after MAPDL finishes.
 - `runner.py`: Expand cases into APDL input files and optionally run MAPDL if available.
@@ -43,8 +42,6 @@ Command examples
 - Segment length sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/length.json [--dry-run]`
 - Cell pitch sweep only: `python mapdl/runner.py --cases mapdl/cases/sweeps/cellsize.json [--dry-run]`
 - Coarse 3-3-3 design grid: `python mapdl/runner.py --cases mapdl/cases/grids/tri0_design_grid.json [--dry-run]`
-- Geometry preview (interactive window): `py -3.12 mapdl/geometry_preview/tri0_preview.py`
-- Geometry preview to PNG (headless): `py -3.12 mapdl/geometry_preview/tri0_preview.py --save preview.png`
 
 Post-release workflow
 1. Pull the latest code and review the changelog or git log for MAPDL-related updates.
@@ -74,7 +71,7 @@ Sometimes it doesnt work: run
 1. $Env:ANSYSLMD_LICENSE_FILE = '1055@WIN-ELARA-GPU'
 2. echo $Env:ANSYSLMD_LICENSE_FILE
 1055@WIN-ELARA-GPU
-3. py -3.12 -c "from ansys.mapdl.core import launch_mapdl; mapdl = launch_mapdl(); print(mapdl.version); mapdl.exit()"
+3. py -3.12 -c "from ansys.mapdl.core import launch_mapdl; mapdl = launch_mapdl(); print(mapdl.version); mapdl.exit()
 >> 
 24.2
 4. py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json 

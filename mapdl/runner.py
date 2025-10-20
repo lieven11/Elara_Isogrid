@@ -81,6 +81,14 @@ def main() -> None:
     template = TEMPLATE_FILE.read_text()
     root = Path(__file__).parent
 
+    metadata = data.get("metadata", {})
+    default_params = {}
+    if isinstance(metadata, dict):
+        for key in ("fixed", "defaults"):
+            cfg = metadata.get(key)
+            if isinstance(cfg, dict):
+                default_params.update(cfg)
+
     description = data.get("description")
     if description:
         print(f"Case library: {description}")
@@ -89,7 +97,9 @@ def main() -> None:
     for case in data["cases"]:
         case_id = case["id"]
         mat_name = case["material"]
-        params = derive_params(case["params"])
+        case_params = case["params"]
+        raw_params = {**default_params, **case_params}
+        params = derive_params(raw_params)
         material = resolve_material(mat_name)
         mat_dict = {
             "name": material.name,
@@ -103,7 +113,6 @@ def main() -> None:
 
         run_dir = ensure_run_dir(root, case_id)
 
-        raw_params = case["params"]
         load_face = float(
             raw_params.get(
                 "axial_load_N",

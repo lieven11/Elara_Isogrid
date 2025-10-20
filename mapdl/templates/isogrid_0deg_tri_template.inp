@@ -149,7 +149,7 @@ finish
 ! Write summary CSV for downstream aggregation
 *cfopen,{CASE_ID}_summary,csv
 *vwrite,'case_id','material','mat_code','R_m','L_m','a_m','b_m','t_m','n_theta','tip_defl_m','buckling_factor','sigma_max_pa','axial_load_face_N','face_pressure_pa','load_pair_total_N','buckling_face_N','buckling_pair_N','total_mass_kg','buckling_per_mass','tip_per_load_m_per_N','sigma_per_load_pa_per_N'
-(A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A,',',A)
+(A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32)
 *vwrite,'{CASE_ID}','{MAT_NAME}','{MAT_CODE}',{R},{L},{A},{B},{T},{NTHETA},u_top,LBF,SMAX,_face_load,_face_pressure,_load_pair,_buckling_face,_buckling_pair,_mass_total,_buckling_per_mass,_tip_per_load,_sigma_per_load
-(A,',',A,',',A,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',I8,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6)
+(A32,',',A32,',',A32,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',I8,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6)
 *cfclose

@@ -4,10 +4,37 @@
 import argparse
 import csv
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 
 SUMMARY_FILE_SUFFIX = "_summary.csv"
+
+CANONICAL_HEADER: Sequence[str] = (
+    "case_id",
+    "material",
+    "mat_code",
+    "R_m",
+    "L_m",
+    "a_m",
+    "b_m",
+    "t_m",
+    "n_theta",
+    "tip_defl_m",
+    "buckling_factor",
+    "sigma_max_pa",
+    "axial_load_face_N",
+    "face_pressure_pa",
+    "load_pair_total_N",
+    "buckling_face_N",
+    "buckling_pair_N",
+    "total_mass_kg",
+    "buckling_per_mass",
+    "tip_per_load_m_per_N",
+    "sigma_per_load_pa_per_N",
+)
+LEGACY_HEADER_ORDER: Sequence[str] = CANONICAL_HEADER[:-2]
+LEGACY_ADDED_COLUMNS: Sequence[str] = CANONICAL_HEADER[-2:]
+LEGACY_MARKERS = {"load_pai", "axial_lo"}
 
 
 def _read_summary_file(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
@@ -36,11 +63,16 @@ def _read_summary_file(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
         else:
             break
 
+    legacy_format = _is_legacy_header(header)
     rows: List[Dict[str, str]] = []
     for raw in data_rows:
         if not any(cell.strip() for cell in raw):
             continue
         values = [cell.strip() for cell in raw]
+        if legacy_format:
+            row = _build_legacy_row(values)
+            rows.append(row)
+            continue
         if len(values) < len(header):
             values.extend([""] * (len(header) - len(values)))
         elif len(values) > len(header):
@@ -48,7 +80,33 @@ def _read_summary_file(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
         row = {header[i]: values[i] for i in range(len(header))}
         rows.append(row)
 
+    if legacy_format:
+        return list(CANONICAL_HEADER), rows
     return header, rows
+
+
+def _is_legacy_header(header: Sequence[str]) -> bool:
+    if not header:
+        return False
+    if any(marker in header for marker in LEGACY_MARKERS):
+        return True
+    if "tip_defl_m" not in header and "tip_defl" in header:
+        return True
+    if header.count("buckling") > 1:
+        return True
+    return False
+
+
+def _build_legacy_row(values: Sequence[str]) -> Dict[str, str]:
+    normalised: Dict[str, str] = {}
+    trimmed = list(values)[: len(LEGACY_HEADER_ORDER)]
+    if len(trimmed) < len(LEGACY_HEADER_ORDER):
+        trimmed.extend([""] * (len(LEGACY_HEADER_ORDER) - len(trimmed)))
+    for name, value in zip(LEGACY_HEADER_ORDER, trimmed):
+        normalised[name] = value
+    for name in LEGACY_ADDED_COLUMNS:
+        normalised[name] = ""
+    return normalised
 
 
 def _merge_fieldnames(existing: List[str], incoming: Iterable[str]) -> None:

@@ -1,1 +1,287 @@
  Beta activation of the GRPC server.
+
+ Ansys Mechanical Enterprise Academic Research     
+
+
+ *------------------------------------------------------------------*
+ |                                                                  |
+ |   W E L C O M E   T O   T H E   A N S Y S (R)  P R O G R A M     |
+ |                                                                  |
+ *------------------------------------------------------------------*
+
+
+
+
+ ***************************************************************
+ *         ANSYS MAPDL 2024 R2          LEGAL NOTICES          *
+ ***************************************************************
+ *                                                             *
+ * Copyright 1971-2024 Ansys, Inc.  All rights reserved.       *
+ * Unauthorized use, distribution or duplication is            *
+ * prohibited.                                                 *
+ *                                                             *
+ * Ansys is a registered trademark of Ansys, Inc. or its       *
+ * subsidiaries in the United States or other countries.       *
+ * See the Ansys, Inc. online documentation or the Ansys, Inc. *
+ * documentation CD or online help for the complete Legal      *
+ * Notice.                                                     *
+ *                                                             *
+ ***************************************************************
+ *                                                             *
+ * THIS ANSYS SOFTWARE PRODUCT AND PROGRAM DOCUMENTATION       *
+ * INCLUDE TRADE SECRETS AND CONFIDENTIAL AND PROPRIETARY      *
+ * PRODUCTS OF ANSYS, INC., ITS SUBSIDIARIES, OR LICENSORS.    *
+ * The software products and documentation are furnished by    *
+ * Ansys, Inc. or its subsidiaries under a software license    *
+ * agreement that contains provisions concerning               *
+ * non-disclosure, copying, length and nature of use,          *
+ * compliance with exporting laws, warranties, disclaimers,    *
+ * limitations of liability, and remedies, and other           *
+ * provisions.  The software products and documentation may be *
+ * used, disclosed, transferred, or copied only in accordance  *
+ * with the terms and conditions of that software license      *
+ * agreement.                                                  *
+ *                                                             *
+ * Ansys, Inc. is a UL registered                              *
+ * ISO 9001:2015 company.                                      *
+ *                                                             *
+ ***************************************************************
+ *                                                             *
+ * This product is subject to U.S. laws governing export and   *
+ * re-export.                                                  *
+ *                                                             *
+ * For U.S. Government users, except as specifically granted   *
+ * by the Ansys, Inc. software license agreement, the use,     *
+ * duplication, or disclosure by the United States Government  *
+ * is subject to restrictions stated in the Ansys, Inc.        *
+ * software license agreement and FAR 12.212 (for non-DOD      *
+ * licenses).                                                  *
+ *                                                             *
+ ***************************************************************
+
+ 2024 R2 
+     
+ Point Releases and Patches installed:   
+     
+ Ansys Service Pack 2024 R2.01   
+ Ansys, Inc. License Manager 2024 R2 
+ Ansys, Inc. License Manager 2024 R2.01  
+ Discovery 2024 R2   
+ Discovery 2024 R2.01
+ Core WB Files 2024 R2   
+ Core WB Files 2024 R2.01
+ SpaceClaim 2024 R2  
+ SpaceClaim 2024 R2.01   
+ Icepak (includes CFD-Post) 2024 R2  
+ Icepak (includes CFD-Post) 2024 R2.01   
+ Ansys Dynamic Reporting 2024 R2 
+ Ansys Dynamic Reporting 2024 R2.01  
+ CFD-Post only 2024 R2   
+ CFD-Post only 2024 R2.01
+ CFX (includes CFD-Post) 2024 R2 
+ CFX (includes CFD-Post) 2024 R2.01  
+ Chemkin 2024 R2 
+ Chemkin 2024 R2.01  
+ EnSight 2024 R2 
+ EnSight 2024 R2.01  
+ FENSAP-ICE 2024 R2  
+ FENSAP-ICE 2024 R2.01   
+ Fluent (includes CFD-Post) 2024 R2  
+ Fluent (includes CFD-Post) 2024 R2.01   
+ Polyflow (includes CFD-Post) 2024 R2
+ Polyflow (includes CFD-Post) 2024 R2.01 
+ Forte (includes EnSight) 2024 R2
+ Forte (includes EnSight) 2024 R2.01 
+ ICEM CFD 2024 R2
+ ICEM CFD 2024 R2.01 
+ TurboGrid 2024 R2   
+ TurboGrid 2024 R2.01
+ Speos 2024 R2   
+ Speos 2024 R2.01
+ Speos HPC 2024 R2   
+ Speos HPC 2024 R2.01
+ Zemax OpticStudio 2024 R2   
+ Zemax OpticStudio 2024 R2.01
+ optiSLang 2024 R2   
+ optiSLang 2024 R2.01
+ Remote Solve Manager Standalone Services 2024 R2
+ Remote Solve Manager Standalone Services 2024 R2.01 
+ Additive 2024 R2
+ Additive 2024 R2.01 
+ Aqwa 2024 R2
+ Aqwa 2024 R2.01 
+ Autodyn 2024 R2 
+ Autodyn 2024 R2.01  
+ Customization Files for User Programmable Features 2024 R2  
+ Customization Files for User Programmable Features 2024 R2.01   
+ LS-DYNA 2024 R2 
+ LS-DYNA 2024 R2.01  
+ Material Calibration App 2024 R2
+ Material Calibration App 2024 R2.01 
+ Mechanical Products 2024 R2 
+ Mechanical Products 2024 R2.01  
+ Motion 2024 R2  
+ Motion 2024 R2.01   
+ Sherlock 2024 R2
+ Sherlock 2024 R2.01 
+ Sound - SAS 2024 R2 
+ Sound - SAS 2024 R2.01  
+ ACIS Geometry Interface 2024 R2 
+ ACIS Geometry Interface 2024 R2.01  
+ AutoCAD Geometry Interface 2024 R2  
+ AutoCAD Geometry Interface 2024 R2.01   
+ Catia, Version 4 Geometry Interface 2024 R2 
+ Catia, Version 4 Geometry Interface 2024 R2.01  
+ Catia, Version 5 Geometry Interface 2024 R2 
+ Catia, Version 5 Geometry Interface 2024 R2.01  
+ Catia, Version 6 Geometry Interface 2024 R2 
+ Catia, Version 6 Geometry Interface 2024 R2.01  
+ Creo Elements/Direct Modeling Geometry Interface 2024 R2
+ Creo Elements/Direct Modeling Geometry Interface 2024 R2.01 
+ Creo Parametric Geometry Interface 2024 R2  
+ Creo Parametric Geometry Interface 2024 R2.01   
+ Inventor Geometry Interface 2024 R2 
+ Inventor Geometry Interface 2024 R2.01  
+ JTOpen Geometry Interface 2024 R2   
+ JTOpen Geometry Interface 2024 R2.01
+ NX Geometry Interface 2024 R2   
+ NX Geometry Interface 2024 R2.01
+ Parasolid Geometry Interface  2024 R2   
+ Parasolid Geometry Interface  2024 R2.01
+ Solid Edge Geometry Interface 2024 R2   
+ Solid Edge Geometry Interface 2024 R2.01
+ SOLIDWORKS Geometry Interface 2024 R2   
+ SOLIDWORKS Geometry Interface 2024 R2.01
+
+
+          *****  MAPDL COMMAND LINE ARGUMENTS  *****
+  INITIAL JOBNAME              = file                                                                                                                                                                                                                                                    
+  BATCH MODE REQUESTED (-b)    = LIST
+  INPUT FILE COPY MODE (-c)    = COPY
+       2 PARALLEL PROCESSES REQUESTED WITH SINGLE THREAD PER PROCESS
+    TOTAL OF     2 CORES REQUESTED
+  INPUT FILE NAME              = C:\Users\lieve\OneDrive\Dokumente\GitHub\Elara_Isogrid\mapdl\runs\tri0_304_t20\.__tmp__.inp
+  OUTPUT FILE NAME             = C:\Users\lieve\OneDrive\Dokumente\GitHub\Elara_Isogrid\mapdl\runs\tri0_304_t20\.__tmp__.out
+
+ PARAMETER STATUS-           (   1 PARAMETERS DEFINED)
+
+ NAME                              VALUE                        TYPE
+ PORT                              50052.0000                    SCALAR
+
+ RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
+ CURRENT JOBNAME=file0  22:51:40  OCT 20, 2025 CP=      0.078
+
+     1  FINISH 
+
+ RUN SETUP PROCEDURE FROM FILE= C:\Program Files\ANSYS Inc\v242\ANSYS\apdl\start.ans
+ Start GRPC Server
+
+ ##############################
+ ### START GRPC SERVER      ###
+ ##############################
+
+ Server Executable   : MapdlGrpc.Server
+ Server listening on : 0.0.0.0:50052
+
+ /OUTPUT FILE= anstmp
+
+ /OUTPUT FILE= anstmp
+
+ /OUTPUT FILE=         
+   *****MAPDL VERIFICATION RUN ONLY*****
+     DO NOT USE RESULTS FOR PRODUCTION
+
+
+          ***** TIME-HISTORY POSTPROCESSOR (POST26) *****
+
+ ALL POST26 SPECIFICATIONS ARE RESET TO INITIAL DEFAULTS
+
+ *** NOTE ***                            CP =       0.000   TIME= 00:00:00
+ Geometry is not available.  Issue RESUME to restore database.           
+
+ *** NOTE ***                            CP =       0.000   TIME= 00:00:00
+ Unable to open default results file                                     
+  Use FILE command to open a results file.                               
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ The geometry is not available.  Issue the RESUME command to restore the 
+ database.  The NUMVAR command is ignored.                               
+
+
+ ***** ROUTINE COMPLETED *****  CP =         0.000
+
+
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Altering the abort level key is not recommended.                        
+
+
+ NUMBER OF DISPLAYED ERRORS ALLOWED PER COMMAND=                200
+ NUMBER OF ERRORS ALLOWED PER COMMAND BEFORE ANSYS ABORT=     10000
+ ABORT LEVEL KEY= -1
+ ALL ERRORS WRITTEN TO                                                                                                                                                                                                                                                                     
+ DO NOT TERMINATE /INPUT UPON FIRST ERROR
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /INPUT FILE=    LINE=       0
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ /OUTPUT FILE=         
+
+ EXIT MAPDL WHILE IN SERVER MODE
+
+ SAVE ALL MODEL, SOLUTION AND POST DATA
+
+ ALL CURRENT MAPDL DATA WRITTEN TO FILE NAME= 
+  FOR POSSIBLE RESUME FROM THIS POINT
+
+
+ NUMBER OF WARNING MESSAGES ENCOUNTERED=         12
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=         14
+
+
+ *-----------------------------------------------------------------------------*
+ |                                                                             |
+ |                               RUN COMPLETED                                 |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Ansys MAPDL 2024 R2         Build 24.2         UP20240603    WINDOWS x64   |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Database Requested(-db)     1024 MB     Scratch Memory Requested   1024 MB |
+ |  Max Database Used(Master)      1 MB     Max Scratch Used(Master)     36 MB |
+ |  Max Database Used(Workers)     1 MB     Max Scratch Used(Workers)     5 MB |
+ |  Sum Database Used(All)         2 MB     Sum Scratch Used(All)        41 MB |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |        CP Time      (sec) =          0.672       Time  =  22:51:41          |
+ |        Elapsed Time (sec) =          6.000       Date  =  10/20/2025        |
+ |                                                                             |
+ *-----------------------------------------------------------------------------*

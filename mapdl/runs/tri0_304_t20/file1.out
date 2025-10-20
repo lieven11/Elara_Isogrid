@@ -168,5 +168,69 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  00:44:18  OCT 16, 2025 CP=      0.125
+ CURRENT JOBNAME=file1  22:51:40  OCT 20, 2025 CP=      0.109
 
+
+ PRINTOUT RESUMED BY /GOP
+
+ *** VERIFICATION RUN - CASE                                  ***  OPTION=  4
+
+
+ NUMBER OF DISPLAYED ERRORS ALLOWED PER COMMAND=                200
+ NUMBER OF ERRORS ALLOWED PER COMMAND BEFORE ANSYS ABORT=     10000
+ ABORT LEVEL KEY= -1
+ ALL ERRORS WRITTEN TO                                                                                                                                                                                                                                                                     
+ DO NOT TERMINATE /INPUT UPON FIRST ERROR
+
+ *****  MAPDL SOLUTION ROUTINE  *****
+
+ FINISH SOLUTION PROCESSING
+
+
+ ***** ROUTINE COMPLETED *****  CP =         0.000
+
+
+
+ *****  MAPDL SOLUTION ROUTINE  *****
+
+
+ ***** ROUTINE COMPLETED *****  CP =         0.000
+
+
+
+ *****  MAPDL SOLUTION ROUTINE  *****
+
+ *** NOTE ***                            CP =       0.000   TIME= 00:00:00
+ Distributed parallel processing has been temporarily disabled.          
+
+
+ ***** ROUTINE COMPLETED *****  CP =         0.000
+
+
+
+ EXIT MAPDL WHILE IN SERVER MODE
+
+
+ NUMBER OF WARNING MESSAGES ENCOUNTERED=          0
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=         14
+
+
+ *-----------------------------------------------------------------------------*
+ |                                                                             |
+ |                               RUN COMPLETED                                 |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Ansys MAPDL 2024 R2         Build 24.2         UP20240603    WINDOWS x64   |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |  Database Requested(-db)     1 MB     Scratch Memory Requested       192 MB |
+ |  Maximum Database Used       1 MB     Maximum Scratch Memory Used      5 MB |
+ |                                                                             |
+ |-----------------------------------------------------------------------------|
+ |                                                                             |
+ |        CP Time      (sec) =          0.312       Time  =  22:51:41          |
+ |        Elapsed Time (sec) =          6.000       Date  =  10/20/2025        |
+ |                                                                             |
+ *-----------------------------------------------------------------------------*
