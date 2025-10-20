@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:53:25
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:11:59
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -17,6 +17,11 @@
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  CMCOPY is not a recognized SOLUTION command, abbreviation, or macro.    
   This command will be ignored.                                          
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Unknown label in field 5 ( max ) of *GET command.                       
+  Line= *get,_zmax,node,,max,loc,z                                       
+  The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
  Component NODE is not defined.                                          
@@ -106,3 +111,8 @@
  command is ignored.  If the file is an older results file that does     
  not contain the geometry, issue a RESUME command to restore the         
  geometry to the database.                                               
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Unknown label in field 5 ( BUCK ) of *GET command.                      
+  Line= *get,LBF,MODE,1,BUCK                                             
+  The *GET command is ignored.                                           

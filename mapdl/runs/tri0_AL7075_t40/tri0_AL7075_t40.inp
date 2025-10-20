@@ -72,11 +72,13 @@ nsll,s,1
 nsle,s
 
 allsel,all
-nsel, s, loc, z, 0
+*set,_sel_tol,max(1e-6,_dz*1e-3)
+nsel, s, loc, z, -_sel_tol, _sel_tol
 cm, LOADZ0, node
 cmcopy, FIXZ0, LOADZ0
 allsel, all
-nsel, s, loc, z, _L
+*get,_zmax,node,,max,loc,z
+nsel, s, loc, z, _zmax-_sel_tol, _zmax+_sel_tol
 cm, LOADZL, node
 allsel, all
 
@@ -116,7 +118,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,FREQ
+*get,LBF,MODE,1,BUCK
 finish
 
 save
