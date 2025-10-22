@@ -5,7 +5,7 @@ design exploration. In the browser you can pick which 3 design parameters are th
 axes (x,y,z), set the rest via sliders, choose the metric (color), and the plot
 updates instantly (client-side JS, no server).
 
-Writes: out/isogrid_dashboard.html
+Writes: heatmap/out/isogrid_dashboard.html
 
 Parameters are in mm (b,t,a,R) and m (L) in the UI; loads in SI.
 """
@@ -629,7 +629,8 @@ window.addEventListener('load', mount);
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out", type=Path, default=Path("out/isogrid_dashboard.html"))
+    default_out = Path(__file__).resolve().parents[1] / "out" / "isogrid_dashboard.html"
+    ap.add_argument("--out", type=Path, default=default_out)
     ap.add_argument("--R_mm", type=float, default=550.0)
     ap.add_argument("--K", type=float, default=1.0)
     ap.add_argument("--N_req", type=float, default=150000.0)

@@ -83,5 +83,5 @@ Notes
 - Material options mirror the dashboard/heatmap scripts: AISI 304, AISI 316L, Al 6061-T6, Al 2024-T3, Al 7075-T6 (see `isogrid/materials.py`).
 - `case_generator.py` respects range/step definitions in the spec. Tightening step sizes (e.g. 0.01 m on `L`, 0.002 m on `a`, 0.00025 m on `t`) quickly scales to tens of thousands of permutations—check the console summary before writing.
 - Each MAPDL run writes `<case_id>_summary.csv` inside its run folder with the key outputs (tip deflection, linear buckling factor, etc.), so `summarize_runs.py` can stitch everything into one overview CSV for post-processing.
-- Heatmap outputs remain under the existing `out/` folder for now; MAPDL outputs are under `mapdl/runs/`. If you want, we can later consolidate heatmap outputs under `out_heatmap/` and update references in your scripts.
+- Heatmap outputs now live under `heatmap/out/`, keeping them separate from MAPDL results under `mapdl/runs/`.
 - On macOS you typically only run the generator/runner in `--dry-run` mode (MAPDL isn’t available); execute the same command without `--dry-run` on a Windows/Linux machine with Ansys installed.

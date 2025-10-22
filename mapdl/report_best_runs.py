@@ -309,24 +309,45 @@ def format_number(value: Optional[float], precision: int = 3) -> str:
 
 def render_table(rows: Sequence[Tuple[int, Row]]) -> str:
     columns = [
-        ("Rank", lambda idx, row: str(idx)),
-        ("Case", lambda idx, row: row.text("case_id")),
-        ("Material", lambda idx, row: row.text("material") or row.text("mat_code")),
-        ("t [m]", lambda idx, row: format_number(row.value("t_m"), precision=4)),
-        ("a [m]", lambda idx, row: format_number(row.value("a_m"), precision=4)),
-        ("Mass [kg]", lambda idx, row: format_number(row.value("total_mass_kg"), precision=4)),
-        ("Load [N]", lambda idx, row: format_number(row.value("load_pair_total_N"), precision=4)),
-        ("Buckling/Mass", lambda idx, row: format_number(row.value("buckling_per_mass"), precision=4)),
-        ("Tip/Load", lambda idx, row: format_number(row.value("tip_per_load"), precision=4)),
-        ("Sigma/Load", lambda idx, row: format_number(row.value("sigma_per_load"), precision=4)),
-        ("Score", lambda idx, row: format_number(row.score, precision=4)),
+        ("Rank", lambda idx, row: str(idx), "right"),
+        ("Case", lambda idx, row: row.text("case_id"), "left"),
+        ("Material", lambda idx, row: row.text("material") or row.text("mat_code"), "left"),
+        ("t [m]", lambda idx, row: format_number(row.value("t_m"), precision=4), "right"),
+        ("a [m]", lambda idx, row: format_number(row.value("a_m"), precision=4), "right"),
+        ("Mass [kg]", lambda idx, row: format_number(row.value("total_mass_kg"), precision=4), "right"),
+        ("Load [N]", lambda idx, row: format_number(row.value("load_pair_total_N"), precision=4), "right"),
+        ("Buckling/Mass", lambda idx, row: format_number(row.value("buckling_per_mass"), precision=4), "right"),
+        ("Tip/Load", lambda idx, row: format_number(row.value("tip_per_load"), precision=4), "right"),
+        ("Sigma/Load", lambda idx, row: format_number(row.value("sigma_per_load"), precision=4), "right"),
+        ("Score", lambda idx, row: format_number(row.score, precision=4), "right"),
     ]
-    header = " | ".join(name for name, _ in columns)
-    divider = " | ".join("---" for _ in columns)
-    lines = [f"| {header} |", f"| {divider} |"]
+
+    widths = [len(name) for name, _, _ in columns]
+    formatted_rows: List[List[str]] = []
     for rank, row in rows:
-        cells = [func(rank, row) for _, func in columns]
-        lines.append("| " + " | ".join(cells) + " |")
+        formatted = []
+        for index, (_, func, _) in enumerate(columns):
+            value = func(rank, row)
+            widths[index] = max(widths[index], len(value))
+            formatted.append(value)
+        formatted_rows.append(formatted)
+
+    def format_cell(value: str, width: int, align: str) -> str:
+        if align == "right":
+            return value.rjust(width)
+        return value.ljust(width)
+
+    header = "| " + " | ".join(
+        format_cell(name, widths[i], columns[i][2]) for i, (name, _, _) in enumerate(columns)
+    ) + " |"
+    divider = "| " + " | ".join("-" * widths[i] for i in range(len(columns))) + " |"
+
+    lines = [header, divider]
+    for formatted in formatted_rows:
+        row_cells = [
+            format_cell(formatted[i], widths[i], columns[i][2]) for i in range(len(columns))
+        ]
+        lines.append("| " + " | ".join(row_cells) + " |")
     return "\n".join(lines)
 
 
@@ -400,7 +421,6 @@ def generate_report(
         lines.append("No rows contained enough data to compute a score.")
     else:
         lines.append(render_table(selected))
-    lines.append("")
 
     lines.append("## Metric Highlights\n")
     lines.append(render_metric_highlights(ranked, stats))

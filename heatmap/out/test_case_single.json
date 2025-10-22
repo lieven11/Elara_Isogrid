@@ -1,0 +1,17 @@
+{
+  "description": "Single case to validate mapdl template fix",
+  "cases": [
+    {
+      "id": "tri0_fixcheck",
+      "material": "AISI_304",
+      "params": {
+        "R": 0.55,
+        "L": 1.0,
+        "a": 0.35,
+        "b": 0.012,
+        "t": 0.0025,
+        "axial_load_N": 1000.0
+      }
+    }
+  ]
+}

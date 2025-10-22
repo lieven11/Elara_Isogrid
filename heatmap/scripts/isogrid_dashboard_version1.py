@@ -2,15 +2,21 @@
 from pathlib import Path
 import argparse
 import json
+import sys
 
-# This is a frozen copy of scripts/isogrid_dashboard.py at "version1".
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+# This is a frozen copy of heatmap/scripts/isogrid_dashboard.py at "version1".
 # No further changes should be applied here; new features go into version2.
 
-from scripts.isogrid_dashboard import HTML_TEMPLATE as _T
+from heatmap.scripts.isogrid_dashboard import HTML_TEMPLATE as _T
 
 def main():
     ap = argparse.ArgumentParser(description="Frozen version1 of the Isogrid Dashboard generator")
-    ap.add_argument("--out", type=Path, default=Path("out/isogrid_dashboard_version1.html"))
+    default_out = Path(__file__).resolve().parents[1] / "out" / "isogrid_dashboard_version1.html"
+    ap.add_argument("--out", type=Path, default=default_out)
     ap.add_argument("--R_mm", type=float, default=550.0)
     ap.add_argument("--K", type=float, default=1.0)
     ap.add_argument("--N_req", type=float, default=150000.0)
@@ -68,4 +74,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

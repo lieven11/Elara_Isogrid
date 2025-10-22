@@ -3,11 +3,13 @@
 
 import argparse
 import csv
+import math
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 
 SUMMARY_FILE_SUFFIX = "_summary.csv"
+DEFAULT_MARKDOWN_PATH = Path(__file__).parent / "runs" / "summary_table.md"
 
 CANONICAL_HEADER: Sequence[str] = (
     "case_id",
@@ -201,7 +203,104 @@ def _format_markdown_table(rows: Sequence[Dict[str, str]], columns: Sequence[str
     return lines
 
 
-def _render_comment_block(rows: Sequence[Dict[str, str]], fieldnames: Sequence[str]) -> str:
+def _write_full_markdown_table(
+    path: Path,
+    rows: Sequence[Dict[str, str]],
+    fieldnames: Sequence[str],
+) -> None:
+    if not rows or not fieldnames:
+        path.write_text("# No data available to render.\n", encoding="utf-8")
+        return
+
+    usable_columns = [name for name in fieldnames if any((row.get(name) or "").strip() for row in rows)]
+    if not usable_columns:
+        path.write_text("# Column set produced no displayable data.\n", encoding="utf-8")
+        return
+
+    def _alignment_marker(width: int, align: str) -> str:
+        width = max(width, 3)
+        if align == "right":
+            return "-" * (width - 1) + ":"
+        if align == "center":
+            if width == 3:
+                return ":-:"
+            return ":" + "-" * (width - 2) + ":"
+        return ":" + "-" * (width - 1)
+
+    def _format_numeric(value: float) -> str:
+        if value == 0:
+            return "0"
+        abs_value = abs(value)
+        if abs_value >= 1e3 or abs_value < 1e-3:
+            return f"{value:.3e}"
+        if abs_value >= 1:
+            text = f"{value:.4f}"
+        else:
+            text = f"{value:.4g}"
+        return text.rstrip("0").rstrip(".")
+
+    column_is_numeric: Dict[str, bool] = {name: True for name in usable_columns}
+    for row in rows:
+        for name in usable_columns:
+            raw = (row.get(name, "") or "").strip()
+            if not raw or set(raw) == {"*"}:
+                continue
+            try:
+                float(raw)
+            except ValueError:
+                column_is_numeric[name] = False
+
+    formatted_rows: List[List[str]] = []
+    widths = {name: len(name) for name in usable_columns}
+    for row in rows:
+        formatted_row = []
+        for name in usable_columns:
+            raw = (row.get(name, "") or "").strip()
+            if not raw:
+                value = "-"
+            elif set(raw) == {"*"}:
+                value = raw
+            elif column_is_numeric[name]:
+                try:
+                    value = _format_numeric(float(raw))
+                except ValueError:
+                    value = raw
+            else:
+                value = raw
+            widths[name] = max(widths[name], len(value))
+            formatted_row.append(value)
+        formatted_rows.append(formatted_row)
+
+    lines: List[str] = []
+    lines.append("# Consolidated MAPDL run summary (all rows)\n")
+    header_parts = []
+    divider_parts = []
+    for name in usable_columns:
+        align = "right" if column_is_numeric[name] else "left"
+        header_parts.append(name.rjust(widths[name]) if align == "right" else name.ljust(widths[name]))
+        divider_parts.append(_alignment_marker(widths[name], align))
+    header = "| " + " | ".join(header_parts) + " |"
+    divider = "| " + " | ".join(divider_parts) + " |"
+    lines.append(header)
+    lines.append(divider)
+    for formatted_row in formatted_rows:
+        cells = []
+        for idx, name in enumerate(usable_columns):
+            align = "right" if column_is_numeric[name] else "left"
+            value = formatted_row[idx]
+            cells.append(value.rjust(widths[name]) if align == "right" else value.ljust(widths[name]))
+        lines.append("| " + " | ".join(cells) + " |")
+    lines.append("")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _render_comment_block(
+    rows: Sequence[Dict[str, str]],
+    fieldnames: Sequence[str],
+    markdown_path: Optional[Path] = None,
+) -> str:
     lines = []
     total_rows = len(rows)
     lines.append("# Consolidated MAPDL run summary")
@@ -215,6 +314,9 @@ def _render_comment_block(rows: Sequence[Dict[str, str]], fieldnames: Sequence[s
         for name in fieldnames:
             description = COLUMN_DESCRIPTIONS.get(name, "Additional MAPDL output column.")
             lines.append(f"# - {name.ljust(name_width)} : {description}")
+        lines.append("#")
+    if markdown_path is not None:
+        lines.append(f"# Full Markdown table written to: {markdown_path}")
         lines.append("#")
     preview_lines = _format_markdown_table(rows, PREVIEW_COLUMNS, PREVIEW_ROW_LIMIT)
     if preview_lines:
@@ -244,6 +346,12 @@ def main() -> None:
         default=Path(__file__).parent / "runs" / "summary.csv",
         help="Output CSV path",
     )
+    ap.add_argument(
+        "--markdown",
+        type=Path,
+        default=DEFAULT_MARKDOWN_PATH,
+        help="Path for a Markdown table covering all rows (use '-' to skip).",
+    )
     args = ap.parse_args()
 
     if not args.runs_dir.exists():
@@ -254,13 +362,22 @@ def main() -> None:
         raise SystemExit("No summary CSVs found. Run MAPDL cases first")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path: Optional[Path]
+    if str(args.markdown) == "-":
+        markdown_path = None
+    else:
+        markdown_path = args.markdown
     with args.out.open("w", newline="") as f:
-        comment_block = _render_comment_block(rows, fieldnames)
+        comment_block = _render_comment_block(rows, fieldnames, markdown_path)
         f.write(comment_block)
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in rows:
             writer.writerow({name: row.get(name, "") for name in fieldnames})
+
+    if markdown_path is not None:
+        _write_full_markdown_table(markdown_path, rows, fieldnames)
+        print(f"Wrote Markdown table with {len(rows)} rows to {markdown_path}")
 
     print(f"Wrote consolidated summary with {len(rows)} rows to {args.out}")
 

@@ -26,6 +26,8 @@
 # - tip_per_load_m_per_N    : Tip compliance per unit load in metres per newton.
 # - sigma_per_load_pa_per_N : Stress amplification per unit load in pascals per newton.
 #
+# Full Markdown table written to: mapdl/runs/summary_table.md
+#
 # Preview table (first rows):
 # | case_id  | material | R_m      | L_m      | t_m      | a_m      | b_m      | tip_defl_m | buckling_factor | sigma_max_pa | load_pair_total_N | buckling_pair_N | total_mass_kg | buckling_per_mass |
 # | -------- | -------- | -------- | -------- | -------- | -------- | -------- | ---------- | --------------- | ------------ | ----------------- | --------------- | ------------- | ----------------- |

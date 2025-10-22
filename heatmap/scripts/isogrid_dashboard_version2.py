@@ -507,7 +507,8 @@ window.addEventListener('load', mount);
 
 def main():
     ap = argparse.ArgumentParser(description="Version 2 Isogrid/Honeycomb Dashboard generator")
-    ap.add_argument("--out", type=Path, default=Path("out/isogrid_dashboard_v2.html"))
+    default_out = Path(__file__).resolve().parents[1] / "out" / "isogrid_dashboard_v2.html"
+    ap.add_argument("--out", type=Path, default=default_out)
     ap.add_argument("--R_mm", type=float, default=550.0)
     ap.add_argument("--K", type=float, default=1.0)
     ap.add_argument("--N_req", type=float, default=150000.0)

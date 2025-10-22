@@ -18,7 +18,7 @@ from typing import Tuple, Dict, Any
 import sys
 
 # Allow running this script from any working directory by adding the repo root to sys.path
-_ROOT = Path(__file__).resolve().parents[1]
+_ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
@@ -185,7 +185,8 @@ def main():
     ap.add_argument('--sf_target', type=float, default=1.2)
     ap.add_argument('--objective', type=str, default='min_mass', choices=['min_mass', 'max_ncr_over_m', 'max_ncr'])
     ap.add_argument('--iters', type=int, default=200)
-    ap.add_argument('--out', type=Path, default=Path('out/optimize_trace.csv'))
+    default_out = _ROOT / "heatmap" / "out" / "optimize_trace.csv"
+    ap.add_argument('--out', type=Path, default=default_out)
     args = ap.parse_args()
 
     mat = MATERIALS[args.material]

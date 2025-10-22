@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 # Allow running this script from any working directory by adding the repo root to sys.path
-_ROOT = Path(__file__).resolve().parents[1]
+_ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
@@ -64,7 +64,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--N_req", type=float, default=None, help="Optional axial force [N] to compute safety factors")
     p.add_argument("--M_req", type=float, default=None, help="Optional bending moment [N·m] for bending safety factor")
     p.add_argument("--T_req", type=float, default=None, help="Optional torque [N·m] for torsion safety factor")
-    p.add_argument("--out", type=Path, default=Path("out/isogrid_heatmap.csv"), help="Output CSV path (written always)")
+    default_out = _ROOT / "heatmap" / "out" / "isogrid_heatmap.csv"
+    p.add_argument("--out", type=Path, default=default_out, help="Output CSV path (written always)")
     p.add_argument("--show", action="store_true", help="Open interactive plot output")
     p.add_argument("--no_save_html", action="store_true", help="Do not write HTML files; only show plots if --show is set")
     p.add_argument("--renderer", type=str, default="browser", help="Plotly renderer to use for fig.show(); e.g., browser, vega, png, notebok")
