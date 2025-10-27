@@ -20,10 +20,12 @@ secdata, 0.012, 0.0015
 ! Representative unwrapped panel width (circumference segment per cell)
 ! Width per cell in unwrapped domain is a
 *set,_a, 0.35
-*set,_dz, 0.3031088913245535
+*set,_dz_nom, 0.3031088913245535
 *set,_L, 1.0
 *set,_nx, 3      ! small starter grid across width (cells)
-*set,_nz, nint(_L/_dz) + 1
+*set,_nseg, max(1, nint(_L/_dz_nom))
+*set,_nz, _nseg + 1
+*set,_dz, _L/_nseg
 *set,u_top,0
 *set,LBF,0
 *set,SMAX,0
@@ -54,6 +56,7 @@ secnum,1
 lesize, all, , , 1
 ! Mesh lines into beam elements
 lmesh, all
+save    ! persist database so components remain available in POST1
 
 /solu
 antype, static, new
@@ -81,13 +84,16 @@ allsel,ALL
 solve
 finish
 
+resume
+finish
+
 /post1
 set,last
 ! Save key results
 cmsel,S,NODE,LOADZL
-*get,u_top,NODE,,MAX,U,Z
+*get,u_top,NODE,LOADZL,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,,MAX,SEQV
+*get,SMAX,ELEM,,S,EQV,MAX
 finish
 
 /solu
@@ -99,7 +105,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,EVL
+*get,LBF,MODE,1,LEIG
 finish
 
 save

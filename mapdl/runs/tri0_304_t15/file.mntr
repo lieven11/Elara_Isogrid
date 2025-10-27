@@ -7,4 +7,4 @@
   STEP   STEP ATTMP ITER   ITER  TIME/LFACT   TIME/LFACT    MONITOR      MONITOR      MONITOR     MONITOR
                                                              Wall         MxDs         MxPl         MxRe
 
-     1      1    1     1      1     1.0000       1.0000       0.0000       0.0000       0.0000       0.0000    
+     1      1    1     1      1     1.0000       1.0000       0.0000      0.71963E-03   0.0000       0.0000    
