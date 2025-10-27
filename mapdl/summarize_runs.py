@@ -3,13 +3,15 @@
 
 import argparse
 import csv
-import math
+import hashlib
+import json
+import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 
 SUMMARY_FILE_SUFFIX = "_summary.csv"
-DEFAULT_MARKDOWN_PATH = Path(__file__).parent / "runs" / "summary_table.md"
+DEFAULT_REPORT_PATH = Path(__file__).parent / "runs" / "summary.md"
 
 CANONICAL_HEADER: Sequence[str] = (
     "case_id",
@@ -33,6 +35,7 @@ CANONICAL_HEADER: Sequence[str] = (
     "buckling_per_mass",
     "tip_per_load_m_per_N",
     "sigma_per_load_pa_per_N",
+    "result_status",
 )
 LEGACY_HEADER_ORDER: Sequence[str] = CANONICAL_HEADER[:-2]
 LEGACY_ADDED_COLUMNS: Sequence[str] = CANONICAL_HEADER[-2:]
@@ -60,6 +63,7 @@ COLUMN_DESCRIPTIONS = {
     "buckling_per_mass": "Buckling capacity per unit mass (buckling_pair_N / total_mass_kg) in N/kg.",
     "tip_per_load_m_per_N": "Tip compliance per unit load in metres per newton.",
     "sigma_per_load_pa_per_N": "Stress amplification per unit load in pascals per newton.",
+    "result_status": "Computation status for this case: computed, zero_output, or error (see run logs).",
 }
 
 PREVIEW_COLUMNS: Sequence[str] = (
@@ -77,8 +81,69 @@ PREVIEW_COLUMNS: Sequence[str] = (
     "buckling_pair_N",
     "total_mass_kg",
     "buckling_per_mass",
+    "result_status",
 )
+
 PREVIEW_ROW_LIMIT = 12
+
+MAPDL_ROOT = Path(__file__).resolve().parent
+if str(MAPDL_ROOT) not in sys.path:
+    sys.path.insert(0, str(MAPDL_ROOT))
+
+import report_best_runs as best_report
+
+
+ERROR_MARKERS = (
+    "*** ERROR ***",
+    "*** FATAL ERROR ***",
+    "***FATAL ERROR***",
+    "*** SEVERE ERROR ***",
+    "SOLUTION ABORTED",
+)
+STATUS_NUMERIC_FIELDS: Sequence[str] = (
+    "tip_defl_m",
+    "buckling_factor",
+    "sigma_max_pa",
+    "buckling_pair_N",
+    "buckling_per_mass",
+)
+
+
+def _safe_float(raw: Optional[str]) -> Optional[float]:
+    if raw is None:
+        return None
+    text = raw.strip()
+    if not text or set(text) == {"*"}:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _has_meaningful_value(raw: Optional[str], tol: float = 1e-12) -> bool:
+    value = _safe_float(raw)
+    if value is None:
+        return False
+    return abs(value) > tol
+
+
+def _infer_result_status(row: Dict[str, str], run_dir: Path) -> str:
+    error_text: List[str] = []
+    for name in ("file0.err", "file1.err", "file0.out", "file1.out"):
+        path = run_dir / name
+        if not path.exists():
+            continue
+        try:
+            error_text.append(path.read_text(encoding="utf-8", errors="ignore"))
+        except Exception:
+            continue
+    blob = "\n".join(error_text)
+    if any(marker in blob for marker in ERROR_MARKERS):
+        return "error"
+    if any(_has_meaningful_value(row.get(field)) for field in STATUS_NUMERIC_FIELDS):
+        return "computed"
+    return "zero_output"
 
 
 def _read_summary_file(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
@@ -177,45 +242,80 @@ def gather_rows(runs_dir: Path) -> Tuple[List[Dict[str, str]], List[str]]:
         else:
             _merge_fieldnames(fieldnames, header)
         for row in parsed_rows:
+            row["result_status"] = row.get("result_status", "")
+            row["result_status"] = _infer_result_status(row, subdir)
+            _merge_fieldnames(fieldnames, ("result_status",))
             _merge_fieldnames(fieldnames, row.keys())
             rows.append(row)
+    
     return rows, fieldnames
 
 
-def _format_markdown_table(rows: Sequence[Dict[str, str]], columns: Sequence[str], limit: int) -> Sequence[str]:
-    preview = list(rows[:limit])
-    usable_columns = [name for name in columns if any(row.get(name) for row in rows)]
-    if not preview or not usable_columns:
-        return ()
-    widths = {name: len(name) for name in usable_columns}
-    for row in preview:
-        for name in usable_columns:
-            value = (row.get(name) or "").strip() or "N/A"
-            widths[name] = max(widths[name], len(value))
-    header = "| " + " | ".join(name.ljust(widths[name]) for name in usable_columns) + " |"
-    divider = "| " + " | ".join("-" * widths[name] for name in usable_columns) + " |"
-    lines = [header, divider]
-    for row in preview:
-        line = "| " + " | ".join(
-            ((row.get(name) or "").strip() or "N/A").ljust(widths[name]) for name in usable_columns
-        ) + " |"
-        lines.append(line)
-    return lines
+def _read_consolidated_summary(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
+    if not path.exists():
+        return [], []
+    with path.open(newline="") as fp:
+        data_lines = [line for line in fp if not line.lstrip().startswith("#")]
+    if not data_lines:
+        return [], []
+    reader = csv.DictReader(data_lines)
+    fieldnames = list(reader.fieldnames or [])
+    rows: List[Dict[str, str]] = []
+    for raw in reader:
+        row: Dict[str, str] = {}
+        for key, value in raw.items():
+            if key is None:
+                continue
+            row[key] = (value or "").strip()
+        rows.append(row)
+    return fieldnames, rows
 
 
-def _write_full_markdown_table(
-    path: Path,
+def _normalise_rows_for_comparison(
+    rows: Sequence[Dict[str, str]],
+    columns: Sequence[str],
+) -> List[Tuple[str, ...]]:
+    normalised: List[Tuple[str, ...]] = []
+    for row in rows:
+        normalised.append(tuple((row.get(column, "") or "").strip() for column in columns))
+    normalised.sort()
+    return normalised
+
+
+def _compute_digest(rows: Sequence[Dict[str, str]], fieldnames: Sequence[str]) -> str:
+    canonical = sorted(set(fieldnames) | {"case_id"})
+    serialisable = [
+        [(row.get(column, "") or "").strip() for column in canonical]
+        for row in rows
+    ]
+    serialisable.sort()
+    payload = json.dumps(serialisable, ensure_ascii=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _summaries_match(
+    new_rows: Sequence[Dict[str, str]],
+    new_fields: Sequence[str],
+    existing_rows: Sequence[Dict[str, str]],
+    existing_fields: Sequence[str],
+) -> bool:
+    if not existing_rows and new_rows:
+        return False
+    columns = sorted(set(new_fields) | set(existing_fields) | {"case_id"})
+    return _normalise_rows_for_comparison(new_rows, columns) == _normalise_rows_for_comparison(existing_rows, columns)
+
+
+
+def _render_full_markdown_table(
     rows: Sequence[Dict[str, str]],
     fieldnames: Sequence[str],
-) -> None:
+) -> str:
     if not rows or not fieldnames:
-        path.write_text("# No data available to render.\n", encoding="utf-8")
-        return
+        return "_No data available to render._"
 
     usable_columns = [name for name in fieldnames if any((row.get(name) or "").strip() for row in rows)]
     if not usable_columns:
-        path.write_text("# Column set produced no displayable data.\n", encoding="utf-8")
-        return
+        return "_Column set produced no displayable data._"
 
     def _alignment_marker(width: int, align: str) -> str:
         width = max(width, 3)
@@ -271,18 +371,15 @@ def _write_full_markdown_table(
             formatted_row.append(value)
         formatted_rows.append(formatted_row)
 
-    lines: List[str] = []
-    lines.append("# Consolidated MAPDL run summary (all rows)\n")
-    header_parts = []
-    divider_parts = []
+    header_parts: List[str] = []
+    divider_parts: List[str] = []
     for name in usable_columns:
         align = "right" if column_is_numeric[name] else "left"
         header_parts.append(name.rjust(widths[name]) if align == "right" else name.ljust(widths[name]))
         divider_parts.append(_alignment_marker(widths[name], align))
     header = "| " + " | ".join(header_parts) + " |"
     divider = "| " + " | ".join(divider_parts) + " |"
-    lines.append(header)
-    lines.append(divider)
+    lines = [header, divider]
     for formatted_row in formatted_rows:
         cells = []
         for idx, name in enumerate(usable_columns):
@@ -290,16 +387,90 @@ def _write_full_markdown_table(
             value = formatted_row[idx]
             cells.append(value.rjust(widths[name]) if align == "right" else value.ljust(widths[name]))
         lines.append("| " + " | ".join(cells) + " |")
-    lines.append("")
+    return "\n".join(lines)
 
+
+def _build_combined_markdown(
+    summary_path: Path,
+    runs_dir: Path,
+    digest: str,
+    rows: Sequence[Dict[str, str]],
+    fieldnames: Sequence[str],
+    ranked: Sequence[best_report.Row],
+    weights: Dict[str, float],
+    stats: Dict[str, best_report.MetricStats],
+    top_n: int,
+) -> str:
+    total_rows = len(rows)
+    ranked_count = len(ranked)
+    selected = list(enumerate(ranked, start=1))[:top_n]
+
+    lines: List[str] = []
+    lines.append("# MAPDL Run Summary\n")
+    lines.append(f"- Source summary: `{summary_path}`")
+    lines.append(f"- Runs directory: `{runs_dir}`")
+    lines.append(f"- Cases aggregated: {total_rows}")
+    lines.append(f"- Ranked rows: {ranked_count}")
+    lines.append(f"- Digest: `{digest}`")
+    weight_text = ", ".join(f"{name}={weights[name]:.2f}" for name in sorted(weights))
+    lines.append(f"- Weights: {weight_text}\n")
+
+    lines.append("## Top Results\n")
+    if selected:
+        lines.append(best_report.render_table(selected))
+    else:
+        lines.append("No rows contained enough data to compute a score.")
+
+    lines.append("\n## Metric Highlights\n")
+    lines.append(best_report.render_metric_highlights(ranked, stats))
+    lines.append("\n## Metric Ranges\n")
+    lines.append(best_report.render_stats_section(stats))
+    lines.append("\n## Full Dataset\n")
+    lines.append(_render_full_markdown_table(rows, fieldnames))
+    lines.append("\n")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+def _format_markdown_table(rows: Sequence[Dict[str, str]], columns: Sequence[str], limit: int) -> Sequence[str]:
+    preview = list(rows[:limit])
+    usable_columns = [name for name in columns if any(row.get(name) for row in rows)]
+    if not preview or not usable_columns:
+        return ()
+    widths = {name: len(name) for name in usable_columns}
+    for row in preview:
+        for name in usable_columns:
+            value = (row.get(name) or "").strip() or "N/A"
+            widths[name] = max(widths[name], len(value))
+    header = "| " + " | ".join(name.ljust(widths[name]) for name in usable_columns) + " |"
+    divider = "| " + " | ".join("-" * widths[name] for name in usable_columns) + " |"
+    lines = [header, divider]
+    for row in preview:
+        line = "| " + " | ".join(
+            ((row.get(name) or "").strip() or "N/A").ljust(widths[name]) for name in usable_columns
+        ) + " |"
+        lines.append(line)
+    return lines
+
+
+
+
+
+def _write_full_markdown_table(
+    path: Path,
+    rows: Sequence[Dict[str, str]],
+    fieldnames: Sequence[str],
+) -> None:
+    content = "# Consolidated MAPDL run summary (all rows)\n\n" + _render_full_markdown_table(rows, fieldnames) + "\n"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text(content, encoding="utf-8")
 
 
 def _render_comment_block(
     rows: Sequence[Dict[str, str]],
     fieldnames: Sequence[str],
-    markdown_path: Optional[Path] = None,
+    digest: str,
+    report_path: Optional[Path],
+    top_n: int,
 ) -> str:
     lines = []
     total_rows = len(rows)
@@ -307,6 +478,8 @@ def _render_comment_block(
     lines.append("# Lines starting with '#' are comments for human readers; CSV parsers should ignore them.")
     lines.append(f"# Rows reported below: {total_rows}")
     lines.append("# Values filled with '*' come directly from MAPDL and typically indicate missing data.")
+    lines.append(f"# Digest: {digest}")
+    lines.append("# Use `python summarize_runs.py --check-only` to verify this summary before relying on cached outputs.")
     lines.append("#")
     if fieldnames:
         name_width = max(len(name) for name in fieldnames)
@@ -315,8 +488,8 @@ def _render_comment_block(
             description = COLUMN_DESCRIPTIONS.get(name, "Additional MAPDL output column.")
             lines.append(f"# - {name.ljust(name_width)} : {description}")
         lines.append("#")
-    if markdown_path is not None:
-        lines.append(f"# Full Markdown table written to: {markdown_path}")
+    if report_path is not None:
+        lines.append(f"# Combined Markdown summary (top {top_n} + full table) written to: {report_path}")
         lines.append("#")
     preview_lines = _format_markdown_table(rows, PREVIEW_COLUMNS, PREVIEW_ROW_LIMIT)
     if preview_lines:
@@ -330,7 +503,6 @@ def _render_comment_block(
         lines.append("# No rows available to preview.")
         lines.append("#")
     return "\n".join(lines) + "\n"
-
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -347,10 +519,35 @@ def main() -> None:
         help="Output CSV path",
     )
     ap.add_argument(
+        "--report",
         "--markdown",
+        dest="report",
         type=Path,
-        default=DEFAULT_MARKDOWN_PATH,
-        help="Path for a Markdown table covering all rows (use '-' to skip).",
+        default=DEFAULT_REPORT_PATH,
+        help="Path for the combined Markdown summary (use '-' to skip).",
+    )
+    ap.add_argument(
+        "--top",
+        type=int,
+        default=10,
+        help="Number of high-scoring rows to include at the top of the Markdown summary.",
+    )
+    ap.add_argument(
+        "--weight",
+        action="append",
+        default=[],
+        metavar="METRIC=VALUE",
+        help="Override default metric weights, e.g. --weight tip_per_load=0.5.",
+    )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="Rebuild outputs even if the existing summary matches the current runs.",
+    )
+    ap.add_argument(
+        "--check-only",
+        action="store_true",
+        help="Only report whether the consolidated summary is up to date without writing files.",
     )
     args = ap.parse_args()
 
@@ -361,25 +558,68 @@ def main() -> None:
     if not rows:
         raise SystemExit("No summary CSVs found. Run MAPDL cases first")
 
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    markdown_path: Optional[Path]
-    if str(args.markdown) == "-":
-        markdown_path = None
+    digest = _compute_digest(rows, fieldnames)
+
+    if args.out.exists():
+        existing_fieldnames, existing_rows = _read_consolidated_summary(args.out)
+        summary_matches = _summaries_match(rows, fieldnames, existing_rows, existing_fieldnames)
     else:
-        markdown_path = args.markdown
+        summary_matches = False
+
+    if args.check_only:
+        if summary_matches:
+            print(f"Summary at {args.out} matches the current run data ({len(rows)} rows).")
+            return
+        raise SystemExit(f"Summary at {args.out} is missing or stale. Re-run without --check-only to rebuild.")
+
+    report_path: Optional[Path]
+    if str(args.report) == "-":
+        report_path = None
+    else:
+        report_path = args.report
+
+    weights = best_report.parse_weight_overrides(args.weight)
+
+    needs_write = args.force or not summary_matches
+    if not needs_write and report_path is not None and not report_path.exists():
+        needs_write = True
+
+    if not needs_write:
+        print(f"Summary already up to date at {args.out}")
+        if report_path is not None and report_path.exists():
+            print(f"Combined Markdown summary already up to date at {report_path}")
+        return
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    comment_block = _render_comment_block(rows, fieldnames, digest, report_path, args.top)
     with args.out.open("w", newline="") as f:
-        comment_block = _render_comment_block(rows, fieldnames, markdown_path)
         f.write(comment_block)
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in rows:
             writer.writerow({name: row.get(name, "") for name in fieldnames})
 
-    if markdown_path is not None:
-        _write_full_markdown_table(markdown_path, rows, fieldnames)
-        print(f"Wrote Markdown table with {len(rows)} rows to {markdown_path}")
-
     print(f"Wrote consolidated summary with {len(rows)} rows to {args.out}")
+
+    if report_path is not None:
+        ranking_rows = best_report.rows_from_dicts(rows)
+        stats = best_report.compute_metric_stats(ranking_rows)
+        best_report.assign_scores(ranking_rows, weights, stats)
+        ranked = best_report.sorted_rows(ranking_rows)
+        combined_markdown = _build_combined_markdown(
+            summary_path=args.out,
+            runs_dir=args.runs_dir,
+            digest=digest,
+            rows=rows,
+            fieldnames=fieldnames,
+            ranked=ranked,
+            weights=weights,
+            stats=stats,
+            top_n=args.top,
+        )
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(combined_markdown, encoding="utf-8")
+        print(f"Wrote Markdown summary with {min(args.top, len(ranked))} ranked rows to {report_path}")
 
 
 if __name__ == "__main__":  # pragma: no cover

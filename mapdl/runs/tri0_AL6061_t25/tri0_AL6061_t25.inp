@@ -52,50 +52,32 @@ type,1
 mat,1
 secnum,1
 lesize, all, , , 1
-lmshape,1,2
-amesh, all
+! Mesh lines into beam elements
+lmesh, all
 
 /solu
 antype, static, new
 
 ! Simple boundary: fix bottom edge (z=0) nodes, apply small axial tip load
-! Find nodes at z=0 and z=L
-cmsel, s, node, , , ,
-nsle, s
-*get,nmin,node,,num,min
-*get,nmax,node,,num,max
-
-! Build nodal components by z-location via selection by location
-allsel,all
-cmsel, all
-nsll,s,1
-nsle,s
-
 allsel,all
 *set,_sel_tol,max(1e-6,_dz*1e-3)
 nsel, s, loc, z, -_sel_tol, _sel_tol
 cm, LOADZ0, node
-cmcopy, FIXZ0, LOADZ0
+d, LOADZ0, all, 0
 allsel, all
 *get,_zmax,node,,max,loc,z
 nsel, s, loc, z, _zmax-_sel_tol, _zmax+_sel_tol
 cm, LOADZL, node
-allsel, all
-
-d, FIXZ0, all, 0
+*get,_ntop,node,,count
 
 ! Distributed axial load applied as node-equivalent forces on top annular face
-cmsel, s, node, LOADZL
-*get,_ntop,node,,count
 *if,_ntop,gt,0,then
+  cmsel, s, node, LOADZL
   *set,_fz_top,_face_load/max(_ntop,1)
   f, all, fz, _fz_top
+  allsel,all
 *endif
 allsel,all
-
-outres,all,none
-outres,elem,yes
-outres,node,yes
 
 solve
 finish
@@ -111,7 +93,7 @@ finish
 
 /solu
 antype,buckle
-buckopt,lanb,1
+bucopt,lanb,1
 pstres,on
 solve
 finish
@@ -142,8 +124,8 @@ finish
 
 ! Write summary CSV for downstream aggregation
 *cfopen,tri0_AL6061_t25_summary,csv
-*vwrite,'case_id','material','mat_code','R_m','L_m','a_m','b_m','t_m','n_theta','tip_defl_m','buckling_factor','sigma_max_pa','axial_load_face_N','face_pressure_pa','load_pair_total_N','buckling_face_N','buckling_pair_N','total_mass_kg','buckling_per_mass','tip_per_load_m_per_N','sigma_per_load_pa_per_N'
-(A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32)
-*vwrite,'tri0_AL6061_t25','Al 6061-T6','AL6061',0.55,1.0,0.35,0.012,0.0025,10,u_top,LBF,SMAX,_face_load,_face_pressure,_load_pair,_buckling_face,_buckling_pair,_mass_total,_buckling_per_mass,_tip_per_load,_sigma_per_load
-(A32,',',A32,',',A32,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',I8,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6,',',F12.6)
+*vwrite,'case_id','material','mat_code','R_m','L_m','a_m','b_m','t_m','n_theta','tip_defl_m','buckling_factor','sigma_max_pa','axial_load_face_N','face_pressure_pa','load_pair_total_N','buckling_face_N','buckling_pair_N','total_mass_kg','buckling_per_mass','tip_per_load_m_per_N','sigma_per_load_pa_per_N','result_status'
+(A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32,',',A32)
+*vwrite,'tri0_AL6061_t25','Al 6061-T6','AL6061',0.55,1.0,0.35,0.012,0.0025,10,u_top,LBF,SMAX,_face_load,_face_pressure,_load_pair,_buckling_face,_buckling_pair,_mass_total,_buckling_per_mass,_tip_per_load,_sigma_per_load,'pending'
+(A32,',',A32,',',A32,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',I8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',E16.8,',',A16)
 *cfclose

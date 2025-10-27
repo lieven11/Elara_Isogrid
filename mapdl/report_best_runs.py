@@ -242,23 +242,32 @@ def coerce_float(value: str) -> Optional[float]:
         return None
 
 
+def rows_from_dicts(raw_rows: Iterable[Dict[str, str]]) -> List[Row]:
+    rows: List[Row] = []
+    for raw_row in raw_rows:
+        raw: Dict[str, str] = {}
+        for key, value in raw_row.items():
+            if key is None:
+                continue
+            raw[key] = value.strip() if value is not None else ""
+        coerced: Dict[str, Optional[float]] = {}
+        for key, value in raw.items():
+            if key in NUMERIC_COLUMNS:
+                coerced[key] = coerce_float(value)
+        row = Row(data=coerced, raw=raw)
+        augment_row(row)
+        rows.append(row)
+    return rows
+
+
 def load_rows(path: Path) -> List[Row]:
     if not path.exists():
         raise FileNotFoundError(f"Summary CSV '{path}' does not exist.")
-    rows: List[Row] = []
     with path.open(newline="") as fp:
         data_lines = (line for line in fp if not line.lstrip().startswith("#"))
         reader = csv.DictReader(data_lines)
-        for raw_row in reader:
-            raw = {key: (value.strip() if value is not None else "") for key, value in raw_row.items()}
-            coerced: Dict[str, Optional[float]] = {}
-            for key, value in raw.items():
-                if key in NUMERIC_COLUMNS:
-                    coerced[key] = coerce_float(value)
-            row = Row(data=coerced, raw=raw)
-            augment_row(row)
-            rows.append(row)
-    return rows
+        raw_rows = list(reader)
+    return rows_from_dicts(raw_rows)
 
 
 def compute_metric_stats(rows: Iterable[Row]) -> Dict[str, MetricStats]:
