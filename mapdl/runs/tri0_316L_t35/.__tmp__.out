@@ -169,7 +169,7 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file0  21:48:33  OCT 27, 2025 CP=      0.203
+ CURRENT JOBNAME=file0  23:24:33  OCT 27, 2025 CP=      0.141
 
      1  FINISH 
 
@@ -198,10 +198,6 @@
 
  *** NOTE ***                            CP =       0.000   TIME= 00:00:00
  Geometry is not available.  Issue RESUME to restore database.           
-
- *** NOTE ***                            CP =       0.000   TIME= 00:00:00
- Unable to open default results file                                     
-  Use FILE command to open a results file.                               
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -277,7 +273,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          1.109       Time  =  21:48:35          |
+ |        CP Time      (sec) =          1.125       Time  =  23:24:35          |
  |        Elapsed Time (sec) =          7.000       Date  =  10/27/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*

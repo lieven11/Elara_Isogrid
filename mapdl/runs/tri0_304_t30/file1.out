@@ -168,7 +168,7 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  21:47:05  OCT 27, 2025 CP=      0.078
+ CURRENT JOBNAME=file1  23:23:07  OCT 27, 2025 CP=      0.078
 
 
  PRINTOUT RESUMED BY /GOP
@@ -283,7 +283,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          1.172       Time  =  21:47:07          |
- |        Elapsed Time (sec) =          8.000       Date  =  10/27/2025        |
+ |        CP Time      (sec) =          0.875       Time  =  23:23:09          |
+ |        Elapsed Time (sec) =          7.000       Date  =  10/27/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*
