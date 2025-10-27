@@ -3,6 +3,7 @@
 ! Case ID: tri0_316L_t002p5_L025_a015_N1000000  Material: AISI 316L
 ! R=0.55 [m], L=0.25 [m], a=0.15 [m], n_theta=23, b=0.012 [m], t=0.0025 [m], dz=0.12990381056766578 [m]
 
+/filname,tri0_316L_t002p5_L025_a015_N1000000
 /prep7
 ! Material definition
 mp, ex, 1, 193000000000.0
@@ -56,7 +57,6 @@ secnum,1
 lesize, all, , , 1
 ! Mesh lines into beam elements
 lmesh, all
-save    ! persist database so components remain available in POST1
 
 /solu
 antype, static, new
@@ -81,10 +81,12 @@ cm,LOADZL,NODE
 *endif
 allsel,ALL
 
+save    ! persist database so components remain available in POST1
+
 solve
 finish
 
-resume
+resume,tri0_316L_t002p5_L025_a015_N1000000
 finish
 
 /post1
@@ -93,7 +95,7 @@ set,last
 cmsel,S,NODE,LOADZL
 *get,u_top,NODE,LOADZL,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,,S,EQV,MAX
+*get,SMAX,ELEM,0,S,EQV,MAX
 finish
 
 /solu
@@ -105,7 +107,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,LEIG
+*get,LBF,MODE,1,EIGR
 finish
 
 save
