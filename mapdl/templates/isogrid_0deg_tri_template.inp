@@ -3,6 +3,7 @@
 ! Case ID: {CASE_ID}  Material: {MAT_NAME}
 ! R={R} [m], L={L} [m], a={A} [m], n_theta={NTHETA}, b={B} [m], t={T} [m], dz={DZ} [m]
 
+/filname,{CASE_ID}
 /prep7
 ! Material definition
 mp, ex, 1, {E}
@@ -56,7 +57,6 @@ secnum,1
 lesize, all, , , 1
 ! Mesh lines into beam elements
 lmesh, all
-save    ! persist database so components remain available in POST1
 
 /solu
 antype, static, new
@@ -81,10 +81,12 @@ cm,LOADZL,NODE
 *endif
 allsel,ALL
 
+save    ! persist database so components remain available in POST1
+
 solve
 finish
 
-resume
+resume,{CASE_ID}
 finish
 
 /post1
@@ -93,7 +95,7 @@ set,last
 cmsel,S,NODE,LOADZL
 *get,u_top,NODE,LOADZL,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,,S,EQV,MAX
+*get,SMAX,ELEM,0,S,EQV,MAX
 finish
 
 /solu
@@ -105,7 +107,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,LEIG
+*get,LBF,MODE,1,EIGR
 finish
 
 save
