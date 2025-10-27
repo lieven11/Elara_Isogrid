@@ -1,6 +1,6 @@
 # MAPDL Run Summary
 
-- Source file: `/Users/lievenmuller/Library/Mobile Documents/com~apple~CloudDocs/Studium/TUM/Maschinenwesen B.Sc./Elara Aerospace/Isogrid Shells/Elara_Isogrid/mapdl/runs/summary.csv`
+- Source file: `c:\Users\lieve\OneDrive\Dokumente\GitHub\Elara_Isogrid\mapdl\runs\summary.csv`
 - Total rows parsed: 40
 - Rows with complete score: 40
 - Weights: buckling_per_mass=0.40, sigma_per_load=0.25, tip_per_load=0.35

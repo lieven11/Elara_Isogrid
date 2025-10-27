@@ -169,7 +169,7 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file0  00:15:30  OCT 21, 2025 CP=      0.109
+ CURRENT JOBNAME=file0  21:52:14  OCT 27, 2025 CP=      0.156
 
      1  FINISH 
 
@@ -256,8 +256,8 @@
   FOR POSSIBLE RESUME FROM THIS POINT
 
 
- NUMBER OF WARNING MESSAGES ENCOUNTERED=         12
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=         15
+ NUMBER OF WARNING MESSAGES ENCOUNTERED=          3
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=          9
 
 
  *-----------------------------------------------------------------------------*
@@ -271,13 +271,13 @@
  |-----------------------------------------------------------------------------|
  |                                                                             |
  |  Database Requested(-db)     1024 MB     Scratch Memory Requested   1024 MB |
- |  Max Database Used(Master)      1 MB     Max Scratch Used(Master)     36 MB |
- |  Max Database Used(Workers)     1 MB     Max Scratch Used(Workers)     5 MB |
- |  Sum Database Used(All)         2 MB     Sum Scratch Used(All)        41 MB |
+ |  Max Database Used(Master)      1 MB     Max Scratch Used(Master)     46 MB |
+ |  Max Database Used(Workers)     1 MB     Max Scratch Used(Workers)    46 MB |
+ |  Sum Database Used(All)         2 MB     Sum Scratch Used(All)        92 MB |
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          0.797       Time  =  00:15:32          |
- |        Elapsed Time (sec) =          8.000       Date  =  10/21/2025        |
+ |        CP Time      (sec) =          0.938       Time  =  21:52:16          |
+ |        Elapsed Time (sec) =          9.000       Date  =  10/27/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*
