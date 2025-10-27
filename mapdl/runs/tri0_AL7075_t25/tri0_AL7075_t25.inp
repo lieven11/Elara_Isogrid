@@ -59,25 +59,24 @@ lmesh, all
 antype, static, new
 
 ! Simple boundary: fix bottom edge (z=0) nodes, apply small axial tip load
-allsel,all
+allsel,ALL
 *set,_sel_tol,max(1e-6,_dz*1e-3)
-nsel, s, loc, z, -_sel_tol, _sel_tol
-cm, LOADZ0, node
-d, LOADZ0, all, 0
-allsel, all
-*get,_zmax,node,,max,loc,z
-nsel, s, loc, z, _zmax-_sel_tol, _zmax+_sel_tol
-cm, LOADZL, node
-*get,_ntop,node,,count
+nsel,S,LOC,Z,-_sel_tol,_sel_tol
+cm,LOADZ0,NODE
+d,LOADZ0,ALL,0
+allsel,ALL
+nsel,S,LOC,Z,_L-_sel_tol,_L+_sel_tol
+cm,LOADZL,NODE
+*get,_ntop,NODE,LOADZL,COUNT
 
 ! Distributed axial load applied as node-equivalent forces on top annular face
-*if,_ntop,gt,0,then
-  cmsel, s, node, LOADZL
+*if,_ntop,GT,0,THEN
+  cmsel,S,NODE,LOADZL
   *set,_fz_top,_face_load/max(_ntop,1)
-  f, all, fz, _fz_top
-  allsel,all
+  f,ALL,FZ,_fz_top
+  allsel,ALL
 *endif
-allsel,all
+allsel,ALL
 
 solve
 finish
@@ -85,10 +84,10 @@ finish
 /post1
 set,last
 ! Save key results
-cmsel,s,LOADZL
-*get,u_top,node,0,max,u,z
-allsel,all
-*get,SMAX,elem,0,max,seqv
+cmsel,S,NODE,LOADZL
+*get,u_top,NODE,,MAX,U,Z
+allsel,ALL
+*get,SMAX,ELEM,,MAX,SEQV
 finish
 
 /solu
@@ -100,7 +99,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,BUCK
+*get,LBF,MODE,1,EVL
 finish
 
 save

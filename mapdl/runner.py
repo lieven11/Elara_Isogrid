@@ -55,20 +55,44 @@ def render_template(
     return template.format(**ctx)
 
 
-def try_launch_mapdl(input_file: Path, workdir: Path) -> None:
+ERROR_MARKERS = (
+    "*** ERROR ***",
+    "*** FATAL ERROR ***",
+    "***FATAL ERROR***",
+    "*** SEVERE ERROR ***",
+    "SOLUTION ABORTED",
+)
+
+
+def try_launch_mapdl(input_file: Path, workdir: Path) -> bool:
     try:
         from ansys.mapdl.core import launch_mapdl  # type: ignore
     except Exception:
         print("ansys.mapdl.core not available; skipping MAPDL run. Generated:", input_file)
-        return
+        return False
 
     mapdl = launch_mapdl(run_location=str(workdir))
     try:
         mapdl.input(str(input_file))
         mapdl.finish()
-        print("MAPDL run completed for", workdir.name)
+        return True
+    except Exception as exc:  # pragma: no cover - MAPDL specific
+        print(f"MAPDL run raised an exception for {workdir.name}: {exc}")
+        return False
     finally:
         mapdl.exit()
+
+
+def _logs_contain_errors(run_dir: Path) -> bool:
+    for path in sorted(run_dir.glob("file*.err")):
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for marker in ERROR_MARKERS:
+            if marker in text:
+                return True
+    return False
 
 
 def main() -> None:
@@ -147,7 +171,12 @@ def main() -> None:
         print(f"Prepared case '{case_id}' in {run_dir}")
 
         if not args.dry_run:
-            try_launch_mapdl(inp_path, run_dir)
+            launched = try_launch_mapdl(inp_path, run_dir)
+            if launched:
+                if _logs_contain_errors(run_dir):
+                    print(f"MAPDL run completed for {run_dir.name} [logs report errors]")
+                else:
+                    print(f"MAPDL run completed for {run_dir.name} [logs clean]")
 
 
 if __name__ == "__main__":
