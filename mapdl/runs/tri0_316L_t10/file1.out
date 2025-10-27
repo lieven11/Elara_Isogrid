@@ -168,7 +168,7 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  00:11:28  OCT 21, 2025 CP=      0.109
+ CURRENT JOBNAME=file1  21:47:45  OCT 27, 2025 CP=      0.062
 
 
  PRINTOUT RESUMED BY /GOP
@@ -193,6 +193,46 @@
 
  *****  MAPDL SOLUTION ROUTINE  *****
 
+                      L O A D   S T E P   O P T I O N S
+
+   LOAD STEP NUMBER. . . . . . . . . . . . . . . .     1
+   TIME AT END OF THE LOAD STEP. . . . . . . . . .  1.0000    
+   NUMBER OF SUBSTEPS. . . . . . . . . . . . . . .     1
+   STEP CHANGE BOUNDARY CONDITIONS . . . . . . . .    NO
+   PRINT OUTPUT CONTROLS . . . . . . . . . . . . .NO PRINTOUT
+   DATABASE OUTPUT CONTROLS. . . . . . . . . . . .ALL DATA WRITTEN
+                                                  FOR THE LAST SUBSTEP
+
+
+ *** NOTE ***                            CP =       0.000   TIME= 00:00:00
+ Predictor is ON by default for structural elements with rotational      
+ degrees of freedom.  Use the PRED,OFF command to turn the predictor     
+ OFF if it adversely affects the convergence.                            
+
+
+
+  *** MASS SUMMARY BY ELEMENT TYPE ***
+
+  TYPE      MASS
+     1  0.174591    
+ AN AVERAGE OF THE X-, Y-, AND Z-DIRECTION MASS TERMS ARE USED
+  Memory available (MB) =    0.0    ,  Memory required (MB) =    0.0    
+
+
+   *** ELEMENT RESULT CALCULATION TIMES
+     TYPE    NUMBER   ENAME      TOTAL CP  AVE CP
+
+        1        12  BEAM188       0.000   0.000000
+
+   *** NODAL LOAD CALCULATION TIMES
+     TYPE    NUMBER   ENAME      TOTAL CP  AVE CP
+
+        1        12  BEAM188       0.000   0.000000
+ *** LOAD STEP     1   SUBSTEP     1  COMPLETED.    CUM ITER =      1
+ *** TIME =   1.00000         TIME INC =   1.00000      NEW TRIANG MATRIX
+
+ FINISH SOLUTION PROCESSING
+
 
  ***** ROUTINE COMPLETED *****  CP =         0.000
 
@@ -200,8 +240,21 @@
 
  *****  MAPDL SOLUTION ROUTINE  *****
 
- *** NOTE ***                            CP =       0.000   TIME= 00:00:00
- Distributed parallel processing has been temporarily disabled.          
+                      L O A D   S T E P   O P T I O N S
+
+   LOAD STEP NUMBER. . . . . . . . . . . . . . . .     1
+
+
+  BLOCK LANCZOS CALCULATION OF UP TO     1 EIGENVECTORS.
+  NUMBER OF EQUATIONS              =          216
+  MAXIMUM WAVEFRONT                =            0
+  MAXIMUM MODES STORED             =            1
+  MINIMUM EIGENVALUE               = -0.10000E+31
+  MAXIMUM EIGENVALUE               =  0.10000E+31
+  CENTER EIGENVALUE                =  0.00000E+00
+
+
+ FINISH SOLUTION PROCESSING
 
 
  ***** ROUTINE COMPLETED *****  CP =         0.000
@@ -212,7 +265,7 @@
 
 
  NUMBER OF WARNING MESSAGES ENCOUNTERED=          0
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=         15
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=          9
 
 
  *-----------------------------------------------------------------------------*
@@ -226,11 +279,11 @@
  |-----------------------------------------------------------------------------|
  |                                                                             |
  |  Database Requested(-db)     1 MB     Scratch Memory Requested       192 MB |
- |  Maximum Database Used       1 MB     Maximum Scratch Memory Used      5 MB |
+ |  Maximum Database Used       1 MB     Maximum Scratch Memory Used     46 MB |
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          1.125       Time  =  00:11:30          |
- |        Elapsed Time (sec) =          7.000       Date  =  10/21/2025        |
+ |        CP Time      (sec) =          1.203       Time  =  21:47:47          |
+ |        Elapsed Time (sec) =          8.000       Date  =  10/27/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*
