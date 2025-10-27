@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:22:25
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:55:30
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -8,21 +8,16 @@
  Altering the abort level key is not recommended.                        
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,_zmax,node,,max,loc,z                                       
-  The *GET command is ignored.                                           
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
  Component NODE is not defined.                                          
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,u_top,node,0,max,u,z                                        
+ Unknown label in field 5 ( MAX ) of *GET command.                       
+  Line= *get,u_top,NODE,,MAX,U,Z                                         
   The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,SMAX,elem,0,max,seqv                                        
+ Unknown label in field 5 ( MAX ) of *GET command.                       
+  Line= *get,SMAX,ELEM,,MAX,SEQV                                         
   The *GET command is ignored.                                           
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
@@ -42,6 +37,6 @@
  Load set not found on result file .                                     
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( BUCK ) of *GET command.                      
-  Line= *get,LBF,MODE,1,BUCK                                             
+ Unknown label in field 5 ( EVL ) of *GET command.                       
+  Line= *get,LBF,MODE,1,EVL                                              
   The *GET command is ignored.                                           
