@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:22:44
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       22:21:10
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -11,6 +11,9 @@
  Component NODE is not defined.                                          
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
+ Data file does not exist for RESUME.                                    
+
+ *** ERROR ***                           CP =       0.000   TIME= 00:00:00
  Component NODE is not defined.                                          
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
@@ -20,10 +23,10 @@
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
  Unknown label in field 5 ( S ) of *GET command.                         
-  Line= *get,SMAX,ELEM,,S,EQV,MAX                                        
+  Line= *get,SMAX,ELEM,0,S,EQV,MAX                                       
   The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( LEIG ) of *GET command.                      
-  Line= *get,LBF,MODE,1,LEIG                                             
+ Unknown label in field 5 ( EIGR ) of *GET command.                      
+  Line= *get,LBF,MODE,1,EIGR                                             
   The *GET command is ignored.                                           

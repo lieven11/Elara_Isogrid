@@ -166,10 +166,10 @@
  PARAMETER STATUS-           (   1 PARAMETERS DEFINED)
 
  NAME                              VALUE                        TYPE
- PORT                              50052.0000                    SCALAR
+ PORT                              50053.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file0  00:22:58  OCT 28, 2025 CP=      0.125
+ CURRENT JOBNAME=file0  00:36:13  OCT 28, 2025 CP=      0.156
 
      1  FINISH 
 
@@ -181,99 +181,4 @@
  ##############################
 
  Server Executable   : MapdlGrpc.Server
- Server listening on : 0.0.0.0:50052
-
- /OUTPUT FILE= anstmp
-
- /OUTPUT FILE= anstmp
-
- /OUTPUT FILE=         
-   *****MAPDL VERIFICATION RUN ONLY*****
-     DO NOT USE RESULTS FOR PRODUCTION
-
-
-          ***** TIME-HISTORY POSTPROCESSOR (POST26) *****
-
- ALL POST26 SPECIFICATIONS ARE RESET TO INITIAL DEFAULTS
-
- *** NOTE ***                            CP =       0.000   TIME= 00:00:00
- Geometry is not available.  Issue RESUME to restore database.           
-
- *** WARNING ***                         CP =       0.000   TIME= 00:00:00
- The geometry is not available.  Issue the RESUME command to restore the 
- database.  The NUMVAR command is ignored.                               
-
-
- ***** ROUTINE COMPLETED *****  CP =         0.000
-
-
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- *** WARNING ***                         CP =       0.000   TIME= 00:00:00
- Altering the abort level key is not recommended.                        
-
-
- NUMBER OF DISPLAYED ERRORS ALLOWED PER COMMAND=                200
- NUMBER OF ERRORS ALLOWED PER COMMAND BEFORE ANSYS ABORT=     10000
- ABORT LEVEL KEY= -1
- ALL ERRORS WRITTEN TO                                                                                                                                                                                                                                                                     
- DO NOT TERMINATE /INPUT UPON FIRST ERROR
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /INPUT FILE=    LINE=       0
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- /OUTPUT FILE=         
-
- EXIT MAPDL WHILE IN SERVER MODE
-
- SAVE ALL MODEL, SOLUTION AND POST DATA
-
- ALL CURRENT MAPDL DATA WRITTEN TO FILE NAME= 
-  FOR POSSIBLE RESUME FROM THIS POINT
-
-
- NUMBER OF WARNING MESSAGES ENCOUNTERED=          3
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=          4
-
-
- *-----------------------------------------------------------------------------*
- |                                                                             |
- |                               RUN COMPLETED                                 |
- |                                                                             |
- |-----------------------------------------------------------------------------|
- |                                                                             |
- |  Ansys MAPDL 2024 R2         Build 24.2         UP20240603    WINDOWS x64   |
- |                                                                             |
- |-----------------------------------------------------------------------------|
- |                                                                             |
- |  Database Requested(-db)     1024 MB     Scratch Memory Requested   1024 MB |
- |  Max Database Used(Master)      1 MB     Max Scratch Used(Master)     46 MB |
- |  Max Database Used(Workers)     1 MB     Max Scratch Used(Workers)    46 MB |
- |  Sum Database Used(All)         2 MB     Sum Scratch Used(All)        92 MB |
- |                                                                             |
- |-----------------------------------------------------------------------------|
- |                                                                             |
- |        CP Time      (sec) =          0.766       Time  =  00:23:00          |
- |        Elapsed Time (sec) =          8.000       Date  =  10/28/2025        |
- |                                                                             |
- *-----------------------------------------------------------------------------*
+ Server listening on : 0.0.0.0:50053

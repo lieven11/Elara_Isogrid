@@ -64,6 +64,18 @@ ERROR_MARKERS = (
 )
 
 
+def _prepare_run_dir(run_dir: Path) -> bool:
+    prepared = True
+    for pattern in ("*.lock", "file*.err"):
+        for path in run_dir.glob(pattern):
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                continue
+            except PermissionError:
+                print(f"Skipping cleanup for {path}; file in use by another process.")
+                prepared = False
+    return prepared
 def try_launch_mapdl(input_file: Path, workdir: Path) -> bool:
     try:
         from ansys.mapdl.core import launch_mapdl  # type: ignore
@@ -71,7 +83,14 @@ def try_launch_mapdl(input_file: Path, workdir: Path) -> bool:
         print("ansys.mapdl.core not available; skipping MAPDL run. Generated:", input_file)
         return False
 
-    mapdl = launch_mapdl(run_location=str(workdir))
+    try:
+        mapdl = launch_mapdl(run_location=str(workdir))
+    except PermissionError as exc:
+        print(f"MAPDL launch skipped for {workdir.name}: {exc}")
+        return False
+    except Exception as exc:  # pragma: no cover - MAPDL specific
+        print(f"MAPDL launch failed for {workdir.name}: {exc}")
+        return False
     try:
         mapdl.input(str(input_file))
         mapdl.finish()
@@ -136,6 +155,9 @@ def main() -> None:
         mat_code = material_code(mat_name)
 
         run_dir = ensure_run_dir(root, case_id)
+        if not _prepare_run_dir(run_dir):
+            print(f"Skipping case '{case_id}' because previous MAPDL files are locked. Close external viewers or MAPDL sessions and retry.")
+            continue
 
         load_face = float(
             raw_params.get(

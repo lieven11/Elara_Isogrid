@@ -3,6 +3,7 @@
 ! Case ID: tri0_304_t30  Material: AISI 304
 ! R=0.55 [m], L=1.0 [m], a=0.35 [m], n_theta=10, b=0.012 [m], t=0.003 [m], dz=0.3031088913245535 [m]
 
+/filname,tri0_304_t30
 /prep7
 ! Material definition
 mp, ex, 1, 193000000000.0
@@ -20,10 +21,12 @@ secdata, 0.012, 0.003
 ! Representative unwrapped panel width (circumference segment per cell)
 ! Width per cell in unwrapped domain is a
 *set,_a, 0.35
-*set,_dz, 0.3031088913245535
+*set,_dz_nom, 0.3031088913245535
 *set,_L, 1.0
 *set,_nx, 3      ! small starter grid across width (cells)
-*set,_nz, nint(_L/_dz) + 1
+*set,_nseg, max(1, nint(_L/_dz_nom))
+*set,_nz, _nseg + 1
+*set,_dz, _L/_nseg
 *set,u_top,0
 *set,LBF,0
 *set,SMAX,0
@@ -78,16 +81,21 @@ cm,LOADZL,NODE
 *endif
 allsel,ALL
 
+save    ! persist database so components remain available in POST1
+
 solve
+finish
+
+resume,tri0_304_t30
 finish
 
 /post1
 set,last
 ! Save key results
 cmsel,S,NODE,LOADZL
-*get,u_top,NODE,,MAX,U,Z
+*get,u_top,NODE,LOADZL,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,,MAX,SEQV
+*get,SMAX,ELEM,0,S,EQV,MAX
 finish
 
 /solu
@@ -99,7 +107,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,EVL
+*get,LBF,MODE,1,EIGR
 finish
 
 save

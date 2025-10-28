@@ -168,7 +168,7 @@
  PORT                              50052.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  00:22:48  OCT 28, 2025 CP=      0.141
+ CURRENT JOBNAME=file1  22:21:14  OCT 28, 2025 CP=      0.031
 
 
  PRINTOUT RESUMED BY /GOP
@@ -181,6 +181,8 @@
  ABORT LEVEL KEY= -1
  ALL ERRORS WRITTEN TO                                                                                                                                                                                                                                                                     
  DO NOT TERMINATE /INPUT UPON FIRST ERROR
+
+ CURRENT JOBNAME REDEFINED AS tri0_304_t05
 
  *****  MAPDL SOLUTION ROUTINE  *****
 
@@ -240,8 +242,32 @@
 
  *****  MAPDL SOLUTION ROUTINE  *****
 
- *** NOTE ***                            CP =       0.000   TIME= 00:00:00
- Distributed parallel processing has been temporarily disabled.          
+                      L O A D   S T E P   O P T I O N S
+
+   LOAD STEP NUMBER. . . . . . . . . . . . . . . .     1
+
+
+  BLOCK LANCZOS CALCULATION OF UP TO     1 EIGENVECTORS.
+  NUMBER OF EQUATIONS              =          216
+  MAXIMUM WAVEFRONT                =            0
+  MAXIMUM MODES STORED             =            1
+  MINIMUM EIGENVALUE               = -0.10000E+31
+  MAXIMUM EIGENVALUE               =  0.10000E+31
+  CENTER EIGENVALUE                =  0.00000E+00
+
+   *****MAPDL VERIFICATION RUN ONLY*****
+     DO NOT USE RESULTS FOR PRODUCTION
+
+  ***** EIGENVALUES (LOAD MULTIPLIERS FOR BUCKLING) *****
+            *** FROM BLOCK LANCZOS ITERATION ***
+
+      SHAPE NUMBER   LOAD MULTIPLIER
+
+            1          -0.59817609E-03
+
+
+
+ FINISH SOLUTION PROCESSING
 
 
  ***** ROUTINE COMPLETED *****  CP =         0.000
@@ -252,7 +278,7 @@
 
 
  NUMBER OF WARNING MESSAGES ENCOUNTERED=          0
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=          4
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=          5
 
 
  *-----------------------------------------------------------------------------*
@@ -270,7 +296,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          1.188       Time  =  00:22:50          |
+ |        CP Time      (sec) =          0.656       Time  =  22:21:16          |
  |        Elapsed Time (sec) =          7.000       Date  =  10/28/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*

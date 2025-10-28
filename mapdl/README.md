@@ -77,7 +77,7 @@ Sometimes it doesnt work: run
 3. py -3.12 -c "from ansys.mapdl.core import launch_mapdl; mapdl = launch_mapdl(); print(mapdl.version); mapdl.exit()
 >> 
 24.2
-4. py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json 
+4. py -3.12 mapdl/runner.py --cases mapdl/cases/sweeps/thickness.json
 (für 4.: oder anderer command für andere Fälle)
 
 Notes
@@ -85,6 +85,6 @@ Notes
 - If `a` is not provided, it is computed from `R` and `n_theta` (cells around the circumference).
 - Material options mirror the dashboard/heatmap scripts: AISI 304, AISI 316L, Al 6061-T6, Al 2024-T3, Al 7075-T6 (see `isogrid/materials.py`).
 - `case_generator.py` respects range/step definitions in the spec. Tightening step sizes (e.g. 0.01 m on `L`, 0.002 m on `a`, 0.00025 m on `t`) quickly scales to tens of thousands of permutations—check the console summary before writing.
-- Each MAPDL run writes `<case_id>_summary.csv` inside its run folder with the key outputs (tip deflection, linear buckling factor, etc.), so `summarize_runs.py` can stitch everything into one overview CSV/Markdown bundle for post-processing.
+- Each MAPDL run writes `<case_id>_summary.csv` inside its run folder with the key outputs (tip deflection, linear buckling factor, etc.), so `summarize_runs.py` can stitch everything into one overview CSV/Markdown bundle fo r post-processing.
 - Heatmap outputs remain under the existing `out/` folder for now; MAPDL outputs are under `mapdl/runs/`. If you want, we can later consolidate heatmap outputs under `out_heatmap/` and update references in your scripts.
 - On macOS you typically only run the generator/runner in `--dry-run` mode (MAPDL isn’t available); execute the same command without `--dry-run` on a Windows/Linux machine with Ansys installed.
