@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:24:29
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:17:21
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -7,41 +7,12 @@
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  Altering the abort level key is not recommended.                        
 
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,_zmax,node,,max,loc,z                                       
-  The *GET command is ignored.                                           
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Component NODE is not defined.                                          
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,u_top,node,0,max,u,z                                        
-  The *GET command is ignored.                                           
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( max ) of *GET command.                       
-  Line= *get,SMAX,elem,0,max,seqv                                        
-  The *GET command is ignored.                                           
-
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
- Fewer modes than the requested number of modes ( 1 ) were computed.     
- There are only 0 modes beyond initial shift of SHIFT= 0.                
+ Node 0 of *GET command is undefined.                                    
+  Line= *GET, u_top, NODE, 0, U, Z                                       
+  The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- No data sets on file.                                                   
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Load set not found on result file .                                     
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- No data sets on file.                                                   
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Load set not found on result file .                                     
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( BUCK ) of *GET command.                      
-  Line= *get,LBF,MODE,1,BUCK                                             
+ Unknown label in field 5 ( SEQV ) of *GET command.                      
+  Line= *get,SMAX,ELEM,0,SEQV,,MAX                                       
   The *GET command is ignored.                                           

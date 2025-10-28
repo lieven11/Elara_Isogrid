@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:09:53
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       00:16:03
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -7,12 +7,12 @@
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  Altering the abort level key is not recommended.                        
 
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( MAX ) of *GET command.                       
-  Line= *get,u_top,NODE,0,MAX,U,Z                                        
+ *** WARNING ***                         CP =       0.000   TIME= 00:00:00
+ Node 0 of *GET command is undefined.                                    
+  Line= *GET, u_top, NODE, 0, U, Z                                       
   The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( MAX ) of *GET command.                       
-  Line= *get,SMAX,ELEM,0,MAX,SEQV                                        
+ Unknown label in field 5 ( SEQV ) of *GET command.                      
+  Line= *get,SMAX,ELEM,0,SEQV,,MAX                                       
   The *GET command is ignored.                                           
