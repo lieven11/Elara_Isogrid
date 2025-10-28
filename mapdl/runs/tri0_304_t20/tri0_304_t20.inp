@@ -93,7 +93,7 @@ set,last
 cmsel,S,NODE,LOADZL
 *get,u_top,NODE,LOADZL,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,,S,EQV,MAX
+*get,SMAX,ELEM,,S,EQV,MAX,MAX
 finish
 
 /solu
