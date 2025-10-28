@@ -90,9 +90,9 @@ finish
 set,last
 ! Save key results
 cmsel,S,LOADZL
-*get,u_top,NODE,0,MAX,U,Z
+*get,u_top,NODE,0,U,Z,MAX
 allsel,ALL
-*get,SMAX,ELEM,0,MAX,SEQV
+*get,SMAX,ELEM,0,SEQV,,MAX
 finish
 
 /solu
