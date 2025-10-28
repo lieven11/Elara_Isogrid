@@ -166,10 +166,10 @@
  PARAMETER STATUS-           (   1 PARAMETERS DEFINED)
 
  NAME                              VALUE                        TYPE
- PORT                              50055.0000                    SCALAR
+ PORT                              50056.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file0  00:16:27  OCT 29, 2025 CP=      0.109
+ CURRENT JOBNAME=file0  00:34:14  OCT 29, 2025 CP=      0.125
 
      1  FINISH 
 
@@ -181,7 +181,7 @@
  ##############################
 
  Server Executable   : MapdlGrpc.Server
- Server listening on : 0.0.0.0:50055
+ Server listening on : 0.0.0.0:50056
 
  /OUTPUT FILE= anstmp
 
@@ -273,7 +273,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          0.922       Time  =  00:16:29          |
+ |        CP Time      (sec) =          0.891       Time  =  00:34:16          |
  |        Elapsed Time (sec) =          7.000       Date  =  10/29/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*

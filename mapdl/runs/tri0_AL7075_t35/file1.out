@@ -165,10 +165,10 @@
  PARAMETER STATUS-           (   1 PARAMETERS DEFINED)
 
  NAME                              VALUE                        TYPE
- PORT                              50052.0000                    SCALAR
+ PORT                              50056.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  23:28:20  OCT 27, 2025 CP=      0.078
+ CURRENT JOBNAME=file1  00:38:59  OCT 29, 2025 CP=      0.062
 
 
  PRINTOUT RESUMED BY /GOP
@@ -181,6 +181,8 @@
  ABORT LEVEL KEY= -1
  ALL ERRORS WRITTEN TO                                                                                                                                                                                                                                                                     
  DO NOT TERMINATE /INPUT UPON FIRST ERROR
+
+ CURRENT JOBNAME REDEFINED AS tri0_AL7075_t35
 
  *****  MAPDL SOLUTION ROUTINE  *****
 
@@ -214,7 +216,7 @@
   *** MASS SUMMARY BY ELEMENT TYPE ***
 
   TYPE      MASS
-     1  0.214637    
+     1  0.236040    
  AN AVERAGE OF THE X-, Y-, AND Z-DIRECTION MASS TERMS ARE USED
   Memory available (MB) =    0.0    ,  Memory required (MB) =    0.0    
 
@@ -253,6 +255,17 @@
   MAXIMUM EIGENVALUE               =  0.10000E+31
   CENTER EIGENVALUE                =  0.00000E+00
 
+   *****MAPDL VERIFICATION RUN ONLY*****
+     DO NOT USE RESULTS FOR PRODUCTION
+
+  ***** EIGENVALUES (LOAD MULTIPLIERS FOR BUCKLING) *****
+            *** FROM BLOCK LANCZOS ITERATION ***
+
+      SHAPE NUMBER   LOAD MULTIPLIER
+
+            1          -0.27426067E-01
+
+
 
  FINISH SOLUTION PROCESSING
 
@@ -265,7 +278,7 @@
 
 
  NUMBER OF WARNING MESSAGES ENCOUNTERED=          0
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=          9
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=          1
 
 
  *-----------------------------------------------------------------------------*
@@ -283,7 +296,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          1.188       Time  =  23:28:22          |
- |        Elapsed Time (sec) =          8.000       Date  =  10/27/2025        |
+ |        CP Time      (sec) =          0.906       Time  =  00:39:01          |
+ |        Elapsed Time (sec) =          8.000       Date  =  10/29/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*
