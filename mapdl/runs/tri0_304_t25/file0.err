@@ -1,4 +1,4 @@
-/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       22:21:28
+/COM,ANSYS RELEASE 2024 R2           BUILD 24.2      UP20240603       23:53:39
 
  *** WARNING ***                         CP =       0.000   TIME= 00:00:00
  The geometry is not available.  Issue the RESUME command to restore the 
@@ -8,25 +8,11 @@
  Altering the abort level key is not recommended.                        
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Component NODE is not defined.                                          
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Data file does not exist for RESUME.                                    
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Component NODE is not defined.                                          
-
- *** WARNING ***                         CP =       0.000   TIME= 00:00:00
- Node 0 of *GET command is undefined.                                    
-  Line= *GET, u_top, NODE, LOADZL, U, Z                                  
+ Unknown label in field 5 ( MAX ) of *GET command.                       
+  Line= *get,u_top,NODE,0,MAX,U,Z                                        
   The *GET command is ignored.                                           
 
  *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( S ) of *GET command.                         
-  Line= *get,SMAX,ELEM,0,S,EQV,MAX                                       
-  The *GET command is ignored.                                           
-
- *** ERROR ***                           CP =       0.000   TIME= 00:00:00
- Unknown label in field 5 ( EIGR ) of *GET command.                      
-  Line= *get,LBF,MODE,1,EIGR                                             
+ Unknown label in field 5 ( MAX ) of *GET command.                       
+  Line= *get,SMAX,ELEM,0,MAX,SEQV                                        
   The *GET command is ignored.                                           

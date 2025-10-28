@@ -165,10 +165,10 @@
  PARAMETER STATUS-           (   1 PARAMETERS DEFINED)
 
  NAME                              VALUE                        TYPE
- PORT                              50052.0000                    SCALAR
+ PORT                              50053.0000                    SCALAR
 
  RELEASE= 2024 R2              BUILD= 24.2      UP20240603   VERSION=WINDOWS x64 
- CURRENT JOBNAME=file1  22:21:14  OCT 28, 2025 CP=      0.031
+ CURRENT JOBNAME=file1  23:53:24  OCT 28, 2025 CP=      0.094
 
 
  PRINTOUT RESUMED BY /GOP
@@ -278,7 +278,7 @@
 
 
  NUMBER OF WARNING MESSAGES ENCOUNTERED=          0
- NUMBER OF ERROR   MESSAGES ENCOUNTERED=          5
+ NUMBER OF ERROR   MESSAGES ENCOUNTERED=          2
 
 
  *-----------------------------------------------------------------------------*
@@ -296,7 +296,7 @@
  |                                                                             |
  |-----------------------------------------------------------------------------|
  |                                                                             |
- |        CP Time      (sec) =          0.656       Time  =  22:21:16          |
- |        Elapsed Time (sec) =          7.000       Date  =  10/28/2025        |
+ |        CP Time      (sec) =          0.812       Time  =  23:53:26          |
+ |        Elapsed Time (sec) =          8.000       Date  =  10/28/2025        |
  |                                                                             |
  *-----------------------------------------------------------------------------*
