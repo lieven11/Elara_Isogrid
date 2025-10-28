@@ -74,7 +74,7 @@ cm,LOADZL,NODE
 
 ! Distributed axial load applied as node-equivalent forces on top annular face
 *if,_ntop,GT,0,THEN
-  cmsel,S,NODE,LOADZL
+  cmsel,S,LOADZL
   *set,_fz_top,_face_load/max(_ntop,1)
   f,ALL,FZ,_fz_top
   allsel,ALL
@@ -86,16 +86,13 @@ save    ! persist database so components remain available in POST1
 solve
 finish
 
-resume,tri0_AL6061_t003p5_L075_a055_N1000000
-finish
-
 /post1
 set,last
 ! Save key results
-cmsel,S,NODE,LOADZL
-*get,u_top,NODE,LOADZL,U,Z,MAX
+cmsel,S,LOADZL
+*get,u_top,NODE,0,MAX,U,Z
 allsel,ALL
-*get,SMAX,ELEM,0,S,EQV,MAX
+*get,SMAX,ELEM,0,MAX,SEQV
 finish
 
 /solu
@@ -107,7 +104,7 @@ finish
 
 /post1
 set,1,1
-*get,LBF,MODE,1,EIGR
+*get,LBF,MODE,1,FREQ
 finish
 
 save
